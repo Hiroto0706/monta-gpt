@@ -1,9 +1,18 @@
 version: "3.9"
 
 services:
-  app:
+  backend:
+    container_name: backend
     build: ./backend
     ports:
       - "8000:8000"
     volumes:
       - ./backend/app:/app
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
