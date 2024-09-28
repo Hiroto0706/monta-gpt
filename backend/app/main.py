@@ -1,7 +1,7 @@
 from fastapi import FastAPI
+from api import auth, chat
 
 app = FastAPI()
 
-@app.get("/")
-async def read_root():
-    return {"message": "Are you ok?"}
+app.include_router(auth.router)
+app.include_router(chat.router)
