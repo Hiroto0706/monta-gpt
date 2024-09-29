@@ -8,6 +8,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app
+    depends_on:
+      - postgres
+      - redis
 
   frontend:
     container_name: frontend
@@ -21,9 +24,11 @@ services:
     container_name: postgres
     image: postgres:14-alpine
     environment:
+      - POSTGRES_HOST=localhost
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=monta-gpt
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_PORT=5432
     ports:
       - "5432:5432"
     volumes:
@@ -42,6 +47,23 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/var/lib/redis/data
+
+  # migrate:
+  #   container_name: migrate
+  #   build:
+  #     context: ./backend/app/db
+  #     dockerfile: ./Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     PYTHONPATH: /app
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_HOST: postgres
+  #     POSTGRES_PORT: 5432
+  #     POSTGRES_NAME: monta-gpt
+  #     POSTGRES_URL: "postgresql://postgres:password@postgres:5432/monta-gpt"
+  #   entrypoint: ["sh", "-c", "alembic upgrade head"]
 
 volumes:
   postgres-data:
