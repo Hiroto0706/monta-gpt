@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from app.db.models.chat_session import ChatSession
+from db.models.chat_session import ChatSession
 import logging
 from datetime import datetime
 

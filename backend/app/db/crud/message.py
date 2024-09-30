@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from app.db.models.message import Message
+from db.models.message import Message
 import logging
 
 
