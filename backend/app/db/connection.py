@@ -6,15 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = (
-    f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:"
-    f"{os.getenv('POSTGRES_PASSWORD', 'password')}@"
-    f"{os.getenv('POSTGRES_HOST', 'localhost')}:"
-    f"{os.getenv('POSTGRES_PORT', '5432')}/"
-    f"{os.getenv('POSTGRES_NAME', 'monta-gpt')}"
-)
-
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(os.getenv("POSTGRES_URL"), echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Baseクラスを定義
