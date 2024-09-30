@@ -1,2 +1,5 @@
 # backend
 *.pyc*
+
+# all
+/.vscode
