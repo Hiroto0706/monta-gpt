@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(prefix="/messages", tags=["messages"])
 
 
 @router.get("/")
-async def get_chat_history():
+async def get_message_by_session_id():
     return {"message": "get chats history"}
 
 
