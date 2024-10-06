@@ -1,5 +1,7 @@
 # backend
 *.pyc*
+backend/app/.env.dev
+backend/app/.env.prd
 
 # all
 /.vscode

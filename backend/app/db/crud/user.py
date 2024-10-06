@@ -16,11 +16,11 @@ def get_user(db: Session, user_id: int) -> Optional[User]:
         return None
 
 
-def create_user(db: Session, name: str, email: str) -> Optional[User]:
+def create_user(db: Session, username: str, email: str) -> Optional[User]:
     """
     新しいユーザーを作成します
     """
-    db_user = User(name=name, email=email)
+    db_user = User(username=username, email=email)
     try:
         db.add(db_user)
         db.commit()
@@ -37,7 +37,10 @@ def create_user(db: Session, name: str, email: str) -> Optional[User]:
 
 
 def update_user(
-    db: Session, user_id: int, name: Optional[str] = None, email: Optional[str] = None
+    db: Session,
+    user_id: int,
+    username: Optional[str] = None,
+    email: Optional[str] = None,
 ) -> Optional[User]:
     """
     指定されたuser_idに基づいてuserを更新します
@@ -45,8 +48,8 @@ def update_user(
     try:
         db_user = db.query(User).filter(User.id == user_id).first()
         if db_user:
-            if name is not None:
-                db_user.name = name
+            if username is not None:
+                db_user.username = username
             if email is not None:
                 db_user.email = email
             db.commit()

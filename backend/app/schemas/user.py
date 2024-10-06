@@ -4,22 +4,16 @@ from typing import Optional
 
 class UserBase(BaseModel):
     email: EmailStr
-    name: str
-
-
-class UserCreate(UserBase):
-    password: str
+    username: str
 
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
-    name: Optional[str] = None
-    password: Optional[str] = None
+    username: Optional[str] = None
 
 
 class UserInDB(UserBase):
     id: int
-    password: str
 
 
 class UserResponse(UserBase):

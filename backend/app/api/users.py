@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from schemas.user import UserCreate, UserResponse
+from schemas.user import UserBase, UserResponse
 from db.connection import get_db_connection
 from db.crud import user as user_crud
 
@@ -17,9 +17,9 @@ def read_user(user_id: int, db: Session = Depends(get_db_connection)):
 
 
 @router.post("/", response_model=UserResponse)
-def create_user(user: UserCreate, db: Session = Depends(get_db_connection)):
+def create_user(user: UserBase, db: Session = Depends(get_db_connection)):
     try:
-        db_user = user_crud.create_user(db, name=user.name, email=user.email)
+        db_user = user_crud.create_user(db, username=user.username, email=user.email)
         if db_user is None:
             raise HTTPException(status_code=400, detail="User creation failed")
         return db_user

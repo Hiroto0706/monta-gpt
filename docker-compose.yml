@@ -23,7 +23,9 @@ services:
       - postgres
       - redis
     env_file:
-      - ./backend/.env
+      - ./backend/app/.env
+    environment:
+      - ENV=dev
 
   frontend:
     container_name: frontend
