@@ -1,4 +1,3 @@
-import os
 from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException
 import requests
@@ -11,6 +10,8 @@ from google.auth.transport import requests as google_requests
 from utilities.access_token import create_access_token
 from sqlalchemy.orm import Session
 from urllib.parse import urlencode
+import utilities.config as config
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,10 +26,10 @@ async def google_auth_login():
     """
     base_url = "https://accounts.google.com/o/oauth2/v2/auth"
     params = {
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        "client_id": config.GOOGLE_CLIENT_ID,
         "response_type": "code",
         "scope": "openid email profile",
-        "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI"),
+        "redirect_uri": config.GOOGLE_REDIRECT_URI,
         "access_type": "offline",
         "prompt": "consent",
     }
@@ -61,9 +62,9 @@ async def google_auth_callback(
     token_url: str = "https://oauth2.googleapis.com/token"
     token_data: Dict[str, str] = {
         "code": code,
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("GOOGLE_REDIRECT_URI"),
+        "client_id": config.GOOGLE_CLIENT_ID,
+        "client_secret": config.GOOGLE_CLIENT_SECRET,
+        "redirect_uri": config.GOOGLE_REDIRECT_URI,
         "grant_type": "authorization_code",
     }
 
@@ -77,7 +78,7 @@ async def google_auth_callback(
 
     try:
         id_info: Dict[str, Any] = id_token.verify_oauth2_token(
-            id_token_jwt, google_requests.Request(), os.getenv("GOOGLE_CLIENT_ID")
+            id_token_jwt, google_requests.Request(), config.GOOGLE_CLIENT_ID
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid ID token: {str(e)}")

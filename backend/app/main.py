@@ -1,14 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.api import router as api_router
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-env = os.getenv("ENV", "dev")
-env_file = f".env.{env}"
-load_dotenv(env_file, override=True)
+from api.router import router as api_router
 
 app = FastAPI()
 app.add_middleware(

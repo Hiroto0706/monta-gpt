@@ -30,9 +30,13 @@ migrationdown-count:
 	cd ./backend/app/db && alembic downgrade -${count}
 
 
-.PHONY: dc-up
-dc-up:
+.PHONY: dc-build-and-run
+dc-build-and-run:
 	docker compose up --build
+
+.PHONY: dc-run
+dc-run:
+	docker compose up
 
 .PHONY: dc-down
 dc-down:
