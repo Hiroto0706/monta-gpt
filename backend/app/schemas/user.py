@@ -7,6 +7,10 @@ class UserBase(BaseModel):
     username: str
 
 
+class UserCreate(BaseModel):
+    pass
+
+
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None

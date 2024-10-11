@@ -23,3 +23,4 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 
 # Others
 ENV = os.getenv("ENV", "dev")
+DEFAULT_SESSION_EXPIRATION_DAY = os.getenv("DEFAULT_SESSION_EXPIRATION_DAY", 7)

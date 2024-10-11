@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.router import router as api_router
 
+# 全てのモデルのインポート
+from db.models import *
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
