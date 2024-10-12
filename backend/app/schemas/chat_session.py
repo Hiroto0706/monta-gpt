@@ -7,10 +7,6 @@ class ChatSessionBase(BaseModel):
     summary: Optional[str] = None
 
 
-class ChatSessionCreate(ChatSessionBase):
-    user_id: int
-
-
 class ChatSessionUpdate(ChatSessionBase):
     pass
 
@@ -34,6 +30,11 @@ class ChatSessionResponse(ChatSessionBase):
 
     class Config:
         orm_mode = True
+
+
+class ChatSessionCreateRequest(BaseModel):
+    user_id: int
+    prompt: str
 
 
 class ChatSessionDeleteResponse(BaseModel):
