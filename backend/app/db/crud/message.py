@@ -14,7 +14,7 @@ def get_messages_by_session_id(
         return (
             db.query(Message)
             .filter(Message.session_id == session_id)
-            .order_by(Message.timestamp)
+            .order_by(Message.updated_at)
             .offset(skip)
             .limit(limit)
             .all()

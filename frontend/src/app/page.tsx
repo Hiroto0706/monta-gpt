@@ -1,31 +1,35 @@
+"use client";
+
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { User } from "@/types/users";
 
-const fetchUser = async (): Promise<User | null> => {
-  try {
-    const response = await axios.get("http://backend:8000/api/users/5");
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
+export default function Home() {
+  const [user, setUser] = useState<User | null>(null);
 
-export default async function Home() {
-  const user = await fetchUser();
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://monta-gpt.com/api/users/1");
+        setUser(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <>
       <p>Hello From Next.js Application</p>
-      <p>
-        {user != null && (
-          <>
-            <span>USER ID: {user.id}</span>
-            <span>USER NAME: {user.name}</span>
-            <span>USER EMAIL: {user.email}</span>
-          </>
-        )}
-      </p>
+      {user != null && (
+        <p>
+          <span>USER ID: {user.id}</span>
+          <span>USER NAME: {user.name}</span>
+          <span>USER EMAIL: {user.email}</span>
+        </p>
+      )}
     </>
   );
 }

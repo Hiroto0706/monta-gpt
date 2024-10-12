@@ -30,12 +30,16 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("content", sa.Text(), nullable=False),
-        sa.Column(
-            "timestamp", sa.TIMESTAMP(), server_default=func.now(), nullable=False
-        ),
         sa.Column("is_user", sa.Boolean(), nullable=False),
         sa.Column(
             "created_at", sa.TIMESTAMP(), server_default=func.now(), nullable=False
+        ),
+        sa.Column(
+            "updated_at",
+            sa.TIMESTAMP(),
+            server_default=func.now(),
+            onupdate=func.now(),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
     )

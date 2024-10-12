@@ -68,8 +68,8 @@ async def create_chat_session(
         session_id=None,
         content=chat_session_request.prompt,
         is_user=True,
-        timestamp=datetime.utcnow(),
         created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     # Agentの応答を生成 (ここではモックレスポンスを使用)
@@ -80,8 +80,8 @@ async def create_chat_session(
         session_id=None,
         content=agent_response_content,
         is_user=False,
-        timestamp=datetime.utcnow(),
         created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     new_chat_session = ChatSession(

@@ -10,8 +10,8 @@ class Message(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("chat_sessions.id"), nullable=False)
     content = Column(Text, nullable=False)
-    timestamp = Column(TIMESTAMP, server_default=func.now())
     is_user = Column(Boolean, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     chat_session = relationship("ChatSession", back_populates="messages")

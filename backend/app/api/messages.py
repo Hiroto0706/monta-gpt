@@ -58,8 +58,8 @@ async def send_prompt(
         session_id=message_create_request.session_id,
         content=message_create_request.prompt,
         is_user=True,
-        timestamp=datetime.utcnow(),
         created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
     db.add(user_message)
     db.commit()
@@ -72,8 +72,8 @@ async def send_prompt(
         session_id=message_create_request.session_id,
         content=agent_response_content,
         is_user=False,
-        timestamp=datetime.utcnow(),
         created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
     db.add(agent_message)
     db.commit()

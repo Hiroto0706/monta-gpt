@@ -16,9 +16,9 @@ class MessageInDB(MessageBase):
     id: int
     session_id: int
     content: str
-    timestamp: datetime
     is_user: bool
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
@@ -33,9 +33,9 @@ class MessageResponse(MessageBase):
     id: int
     session_id: int
     content: str
-    timestamp: datetime
     is_user: bool
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
