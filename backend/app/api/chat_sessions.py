@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timedelta
+from db.models import message
 from db.models.message import Message
 from db.connection import get_db_connection
 from db.models.chat_session import ChatSession
@@ -117,7 +118,7 @@ async def delete_chat_session(
     session_id: int, db: Session = Depends(get_db_connection)
 ):
     """
-    指定されたチャットセッションを削除します。
+    指定されたチャットセッションと、そのセッションに関連するメッセージを削除します。
 
     Args:
         session_id (int): 削除対象のセッションID
@@ -134,6 +135,11 @@ async def delete_chat_session(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chat session not found"
         )
+
+    messages = db.query(Message).filter(Message.session_id == session_id).all()
+    for message in messages:
+        db.delete(message)
+
     db.delete(chat_session)
     db.commit()
 
