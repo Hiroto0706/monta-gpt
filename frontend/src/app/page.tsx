@@ -3,7 +3,7 @@ import { User } from "@/types/users";
 
 const fetchUser = async (): Promise<User | null> => {
   try {
-    const response = await axios.get("http://backend:8000/api/users/1");
+    const response = await axios.get("http://backend:8000/api/users/5");
     return response.data;
   } catch (error) {
     console.error(error);
