@@ -29,7 +29,6 @@ migrationdown:
 migrationdown-count:
 	cd ./backend/app/db && alembic downgrade -${count}
 
-
 .PHONY: dc-build-and-run
 dc-build-and-run:
 	docker compose up --build
@@ -42,6 +41,9 @@ dc-run:
 dc-down:
 	docker compose down
 
+# MEMO: 依存関係の管理は一旦は以下のコマンドを実行することで管理すると良い
+# pip freeze | grep -E '^(fastapi|uvicorn|langchain|openai)=='
+# -E 以降にほしいライブラリの名前を入れるだけで現在freezeに入っているライブラリから抽出してくれます
 .PHONY: update-requirements
 update-requirements:
 	cd backend && rm -f requirements.txt && pip freeze > requirements.txt

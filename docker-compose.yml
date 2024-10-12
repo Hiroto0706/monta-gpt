@@ -22,10 +22,29 @@ services:
     depends_on:
       - postgres
       - redis
+      - agent
     env_file:
       - ./backend/app/.env
     environment:
       - ENV=dev
+    networks:
+      - app-network
+
+  agent:
+    container_name: agent
+    build: ./agent
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./agent/app:/app
+    depends_on:
+      - postgres
+    env_file:
+      - ./agent/.env
+    environment:
+      - ENV=dev
+    networks:
+      - app-network
 
   frontend:
     container_name: frontend
@@ -34,6 +53,8 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+    networks:
+      - app-network
 
   postgres:
     container_name: postgres
@@ -51,6 +72,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   redis:
     container_name: redis
@@ -60,7 +83,12 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/var/lib/redis/data
+    networks:
+      - app-network
 
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  app-network:
