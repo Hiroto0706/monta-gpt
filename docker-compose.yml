@@ -27,8 +27,6 @@ services:
       - agent
     env_file:
       - ./backend/app/.env
-    environment:
-      - ENV=dev
     networks:
       - app-network
 
@@ -43,8 +41,6 @@ services:
       - postgres
     env_file:
       - ./agent/.env
-    environment:
-      - ENV=dev
     networks:
       - app-network
 

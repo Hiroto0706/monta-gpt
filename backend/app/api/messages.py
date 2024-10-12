@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from db.connection import get_db_connection
 from db.models.message import Message
@@ -26,13 +27,21 @@ async def get_messages_by_session_id(
     Raises:
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
-    messages = db.query(Message).filter(Message.session_id == thread_id).all()
-
-    if not messages:
+    try:
+        messages = db.query(Message).filter(Message.session_id == thread_id).all()
+        if not messages:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Messages not found"
+            )
+    except SQLAlchemyError as db_error:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Messages not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(db_error)}",
         )
-
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
     return messages
 
 
