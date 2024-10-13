@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+import httpx
+import requests
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from db.connection import get_db_connection
 from db.models.message import Message
 from schemas.message import MessageCreateRequest, MessageResponse
+import utilities.config as config
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -70,22 +73,40 @@ async def send_prompt(
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
-    db.add(user_message)
-    db.commit()
-    db.refresh(user_message)
-
-    # TODO: agentにプロンプトを渡し、解凍を生成してもらう処理を追加
-    agent_response_content = "This is a placeholder response from the agent."
-
-    agent_message = Message(
-        session_id=message_create_request.session_id,
-        content=agent_response_content,
-        is_user=False,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-    )
-    db.add(agent_message)
-    db.commit()
-    db.refresh(agent_message)
-
-    return agent_message
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
+        try:
+            response = await client.post(
+                f"{config.AGENT_URL}api/agent/",
+                json={"prompt": message_create_request.prompt},
+            )
+            response.raise_for_status()
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            )
+        agent_response_content = response.json().get("response")
+        agent_message = Message(
+            session_id=message_create_request.session_id,
+            content=agent_response_content,
+            is_user=False,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+    try:
+        db.add(user_message)
+        db.add(agent_message)
+        db.commit()
+        db.refresh(user_message)
+        db.refresh(agent_message)
+        return agent_message
+    except SQLAlchemyError as db_error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(db_error)}",
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )

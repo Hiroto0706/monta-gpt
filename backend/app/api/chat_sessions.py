@@ -1,4 +1,4 @@
-import requests
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -88,19 +88,17 @@ async def create_chat_session(
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
-
-    try:
-        generate_api: str = f"{config.AGENT_URL}api/generate"
-        print(generate_api)
-        response = requests.post(
-            generate_api,
-            json={"prompt": chat_session_request.prompt},
-        )
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
+        try:
+            response = client.post(
+                f"{config.AGENT_URL}api/agent/",
+                json={"prompt": chat_session_request.prompt},
+            )
+            response.raise_for_status()
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            )
 
     agent_response: str = response.json().get("response")
     agent_summary: str = response.json().get("summary")
@@ -139,6 +137,7 @@ async def create_chat_session(
         db.commit()
         db.refresh(user_message)
         db.refresh(agent_message)
+        return new_chat_session
     except SQLAlchemyError as db_error:
         db.rollback()
         raise HTTPException(
@@ -154,8 +153,6 @@ async def create_chat_session(
         )
 
     # TODO: redisに追加したセッションを追加する処理
-
-    return new_chat_session
 
 
 @router.delete(

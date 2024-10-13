@@ -1,35 +1,14 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from langchain import OpenAI
+import utilities.config as config
+from api.router import router as api_router
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[config.ALLOW_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-api_router = APIRouter(prefix="/api")
-
-
-class PromptRequest(BaseModel):
-    prompt: str
-
-
-class Response(BaseModel):
-    response: str
-    summary: str
-
-
-@api_router.post("/generate", response_model=Response)
-async def generate_response(request: PromptRequest):
-
-    generated_response = f"Agent response to: {request.prompt}"
-    summary = "Summary of the response"
-
-    return {"response": generated_response, "summary": summary}
-
-
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")

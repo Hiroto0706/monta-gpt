@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 import requests
 from pydantic import BaseModel
 from services.users import get_or_create_user
@@ -68,13 +68,33 @@ async def google_auth_callback(
         "grant_type": "authorization_code",
     }
 
-    token_response: requests.Response = requests.post(token_url, data=token_data)
-    token_response_data: Dict[str, Any] = token_response.json()
+    try:
+        token_response: requests.Response = requests.post(token_url, data=token_data)
+        token_response.raise_for_status()
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch token from Google: {str(e)}"
+        )
+
+    try:
+        token_response_data: Dict[str, Any] = token_response.json()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse token response: {str(e)}",
+        )
 
     if "error" in token_response_data:
-        raise HTTPException(status_code=400, detail=token_response_data["error"])
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=token_response_data["error"]
+        )
 
     id_token_jwt: str = token_response_data.get("id_token", "")
+    if not id_token_jwt:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID token not found in token response",
+        )
 
     try:
         id_info: Dict[str, Any] = id_token.verify_oauth2_token(
@@ -91,9 +111,22 @@ async def google_auth_callback(
             status_code=400, detail="Email or name not found in ID token"
         )
 
-    user: User = get_or_create_user(db=db, username=name, email=email)
+    try:
+        user: User = get_or_create_user(db=db, username=name, email=email)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve or create user: {str(e)}",
+        )
 
-    access_token: str = create_access_token(
-        data={"sub": user.email, "username": user.username}
-    )
+    try:
+        access_token: str = create_access_token(
+            data={"sub": user.email, "username": user.username}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create access token: {str(e)}",
+        )
+
     return TokenResponse(access_token=access_token, token_type="bearer")
