@@ -1,3 +1,10 @@
+from typing import Any, Dict, Optional
+from fastapi import Depends, HTTPException, status
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+)
+from utilities.access_token import verify_access_token
 from db.models.user import User
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -28,3 +35,23 @@ def get_or_create_user(db: Session, username: str, email: str) -> User:
     except SQLAlchemyError as db_error:
         db.rollback()
         raise db_error
+
+
+bearer_scheme = HTTPBearer()
+
+
+async def get_user_payload(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> Optional[Dict[str, Any]]:
+    """
+    access_tokenをともに対象のユーザー情報を取得します
+
+    Args:
+        token (str): アクセストークン
+
+    Returns:
+        User: 現在のユーザーオブジェクト
+    """
+    token = credentials.credentials
+    payload = verify_access_token(token)
+    return payload

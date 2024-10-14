@@ -1,8 +1,8 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 import requests
 from pydantic import BaseModel
-from services.users import get_or_create_user
+from services.users import get_or_create_user, get_user_payload
 from db.connection import get_db_connection
 from db.models.user import User
 from google.oauth2 import id_token
@@ -130,3 +130,32 @@ async def google_auth_callback(
         )
 
     return TokenResponse(access_token=access_token, token_type="bearer")
+
+
+class AuthUserResponse(BaseModel):
+    status: str
+    user: Dict[str, Any]
+
+
+@router.get("/verify", response_model=AuthUserResponse)
+async def verify_token(
+    current_user: Optional[Dict[str, any]] = Depends(get_user_payload)
+):
+    """
+    ヘッダー内のaccess_tokenよりユーザーがログイン状態かどうかを検証する
+
+    Args:
+        current_user (Optional[Dict[str, Any]]): トークンから取得したユーザー情報
+
+    Returns:
+        AuthUserResponse: ログインステータスとuser情報を含むレスポンス
+
+    Raises:
+        HTTPException: 無効なアクセストークンの場合
+    """
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="無効なアクセストークンです",
+        )
+    return AuthUserResponse(status="logged_in", user=current_user)
