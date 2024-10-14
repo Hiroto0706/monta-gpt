@@ -1,35 +1,43 @@
 "use client";
 
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { User } from "@/types/users";
+import Head from "next/head";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get("http://monta-gpt.com/api/users/1");
-        setUser(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const handleGoogleLogin = () => {
+    // Google OAuth認証の処理を書く場所
+    console.log("Googleでログイン");
+    router.push("/chat");
+  };
 
   return (
     <>
-      <p>Hello From Next.js Application</p>
-      {user != null && (
-        <p>
-          <span>USER ID: {user.id}</span>
-          <span>USER NAME: {user.name}</span>
-          <span>USER EMAIL: {user.email}</span>
-        </p>
-      )}
+      <Head>
+        <title>もんたGPT</title>
+        <meta name="description" content="Googleでログインするページ" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div className="flex h-screen justify-center items-center bg-white">
+        <main className="flex flex-col justify-center items-center p-16 bg-white rounded-lg border border-gray-200">
+          <h1 className="text-3xl font-bold my-16">もんたGPT</h1>
+          <button
+            onClick={() => handleGoogleLogin()}
+            className="flex items-center justify-center w-64 bg-white border border-gray-200 font-medium py-2 px-4 shadow rounded-lg hover:bg-gray-100"
+          >
+            <Image
+              src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
+              alt="Google Logo"
+              className="w-6 h-6 mr-3"
+              width={64}
+              height={64}
+            />
+            Googleでログイン
+          </button>
+        </main>
+      </div>
     </>
   );
 }

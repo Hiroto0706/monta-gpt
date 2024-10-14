@@ -1,9 +1,11 @@
 import axios from "axios";
-import { User } from "@/types/users";
 
-const fetchUser = async (): Promise<User | null> => {
+// TODO: getServerSidePropsを使ってリダイレクト処理を実装する
+
+const fetchUser = async (): Promise<any> => {
   try {
-    const response = await axios.get("http://backend:8000/api/users/1");
+    const response = await axios.get("http://backend:8000/api/messages/4");
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -17,15 +19,9 @@ export default async function Chat() {
   return (
     <>
       <p>This is Chat Page</p>
-      <p>
-        {user != null && (
-          <>
-            <span>USER ID: {user.id}</span>
-            <span>USER NAME: {user.name}</span>
-            <span>USER EMAIL: {user.email}</span>
-          </>
-        )}
-      </p>
+      {user.map((chat) => {
+        <>{chat.content}</>;
+      })}
     </>
   );
 }

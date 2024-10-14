@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="jp">
-      <body>{children}</body>
+      <body className="text-gray-600">{children}</body>
     </html>
   );
 }
