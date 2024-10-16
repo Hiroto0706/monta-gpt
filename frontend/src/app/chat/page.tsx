@@ -1,27 +1,48 @@
+"use client";
+
+import { Message } from "@/types/messages";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // TODO: getServerSidePropsを使ってリダイレクト処理を実装する
 
-const fetchUser = async (): Promise<any> => {
+const fetchMessages = async (): Promise<Message[]> => {
   try {
-    const response = await axios.get("http://backend:8000/api/messages/4");
-    console.log(response.data);
+    const response = await axios.get("http://monta-gpt.com/api/messages/4");
     return response.data;
   } catch (error) {
     console.error(error);
-    return null;
+    return [];
   }
 };
 
-export default async function Chat() {
-  const user = await fetchUser();
+export default function Chat() {
+  const searchParams = useSearchParams();
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const fetchedMessages = await fetchMessages();
+      setMessages(fetchedMessages);
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      sessionStorage.setItem("access_token", token);
+    }
+  }, [searchParams]);
 
   return (
     <>
       <p>This is Chat Page</p>
-      {user.map((chat) => {
-        <>{chat.content}</>;
-      })}
+      {messages.map((message) => (
+        <div key={message.id}>{message.content}</div>
+      ))}
     </>
   );
 }

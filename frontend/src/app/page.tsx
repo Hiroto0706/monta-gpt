@@ -2,15 +2,23 @@
 
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter();
+  // const router = useRouter();
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     // Google OAuth認証の処理を書く場所
     console.log("Googleでログイン");
-    router.push("/chat");
+    try {
+      const response = await fetch(
+        "http://monta-gpt.com/api/auth/google/login"
+      );
+      const data = await response.json();
+
+      window.location.href = data.auth_url;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

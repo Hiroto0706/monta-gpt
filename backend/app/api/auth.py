@@ -1,5 +1,7 @@
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import Response
 import requests
 from pydantic import BaseModel
 from services.users import get_or_create_user, get_user_payload
@@ -37,15 +39,10 @@ async def google_auth_login():
     return {"auth_url": url}
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-
-
-@router.get("/google/callback", response_model=TokenResponse)
+@router.get("/google/callback")
 async def google_auth_callback(
     code: str, db: Session = Depends(get_db_connection)
-) -> TokenResponse:
+) -> RedirectResponse:
     """
     Google OAuth2認証のコールバックを処理し、アクセストークンを生成します。
 
@@ -129,7 +126,7 @@ async def google_auth_callback(
             detail=f"Failed to create access token: {str(e)}",
         )
 
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    return RedirectResponse(url=f"http://monta-gpt.com/chat?token={access_token}")
 
 
 class AuthUserResponse(BaseModel):
@@ -137,7 +134,7 @@ class AuthUserResponse(BaseModel):
     user: Dict[str, Any]
 
 
-@router.get("/verify", response_model=AuthUserResponse)
+@router.get("/verify", response_model=AuthUserResponse, status_code=status.HTTP_200_OK)
 async def verify_token(
     current_user: Optional[Dict[str, any]] = Depends(get_user_payload)
 ):
