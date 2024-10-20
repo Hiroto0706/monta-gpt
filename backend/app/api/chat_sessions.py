@@ -1,5 +1,6 @@
+from fastapi.responses import RedirectResponse
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List
@@ -20,7 +21,9 @@ router = APIRouter(prefix="/chat_sessions", tags=["chat_sessions"])
 
 # TODO: user_idごとにchat_sessionsを取得するように修正
 @router.get("/{user_id}", response_model=List[ChatSessionResponse])
-async def get_chat_history(user_id: int, db: Session = Depends(get_db_connection)):
+async def get_chat_history(
+    user_id: int, request: Request, db: Session = Depends(get_db_connection)
+):
     """
     指定されたユーザーのチャットセッション履歴を取得します。
 

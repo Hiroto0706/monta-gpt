@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from api.router import router as api_router
 import utilities.config as config
 
@@ -7,6 +8,8 @@ import utilities.config as config
 from db.models import *
 
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[config.ALLOW_ORIGIN],

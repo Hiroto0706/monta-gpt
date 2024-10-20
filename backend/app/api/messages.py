@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from typing import Any, Dict, List
+from fastapi.responses import RedirectResponse
 import httpx
-import requests
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
+from services.users import get_user_payload
 from db.connection import get_db_connection
 from db.models.message import Message
 from schemas.message import MessageCreateRequest, MessageResponse
@@ -12,10 +13,11 @@ import utilities.config as config
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
-
 @router.get("/{thread_id}", response_model=List[MessageResponse])
 async def get_messages_by_session_id(
-    thread_id: int, db: Session = Depends(get_db_connection)
+    thread_id: int,
+    current_user: Dict[str, Any] = Depends(get_user_payload),
+    db: Session = Depends(get_db_connection),
 ):
     """
     指定された `thread_id` に基づいてメッセージのリストを取得します。
@@ -30,6 +32,8 @@ async def get_messages_by_session_id(
     Raises:
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
+    print("ここまできてる？")
+    print(current_user)
     try:
         messages = db.query(Message).filter(Message.session_id == thread_id).all()
         if not messages:
