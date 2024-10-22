@@ -1,14 +1,11 @@
 "use client";
 
-import Head from "next/head";
 import Image from "next/image";
 
 export default function Home() {
   // const router = useRouter();
 
   const handleGoogleLogin = async () => {
-    // Google OAuth認証の処理を書く場所
-    console.log("Googleでログイン");
     try {
       const response = await fetch(
         "http://monta-gpt.com/api/auth/google/login"
@@ -23,12 +20,7 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>もんたGPT</title>
-        <meta name="description" content="Googleでログインするページ" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div className="flex h-screen justify-center items-center bg-white">
+      <div className="flex h-screen justify-center items-center">
         <main className="flex flex-col justify-center items-center p-16 bg-white rounded-lg border border-gray-200">
           <h1 className="text-3xl font-bold my-16">もんたGPT</h1>
           <button

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Head from "next/head";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -13,7 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="jp">
-      <body className="text-gray-600">{children}</body>
+      <Head>
+        <title>もんたGPT</title>
+        <meta name="description" content="Googleでログインするページ" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <body className="text-gray-600 bg-gray-100">{children}</body>
     </html>
   );
 }
