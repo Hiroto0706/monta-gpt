@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from fastapi import HTTPException, status
 from jose import jwt, JWTError
 import utilities.config as config
 
@@ -32,4 +33,7 @@ def verify_access_token(token: str):
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         return payload
     except JWTError:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )

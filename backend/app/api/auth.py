@@ -2,7 +2,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 import requests
-from services.users import get_or_create_user
+from services.users import get_or_create_user, get_user_payload
 from db.connection import get_db_connection
 from db.models.user import User
 from google.oauth2 import id_token
@@ -117,7 +117,7 @@ async def google_auth_callback(
 
     try:
         access_token: str = create_access_token(
-            data={"sub": user.email, "username": user.username}
+            data={"sub": user.email, "username": user.username, "user_id": user.id}
         )
     except Exception as e:
         raise HTTPException(
@@ -125,4 +125,40 @@ async def google_auth_callback(
             detail=f"Failed to create access token: {str(e)}",
         )
 
-    return RedirectResponse(url=f"http://monta-gpt.com/new?token={access_token}")
+    if config.ENV == "prd":
+        secure_cookie = True
+        httponly_cookie = True
+    else:
+        secure_cookie = False
+        httponly_cookie = False
+
+    response = RedirectResponse(url="http://monta-gpt.com/new")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=httponly_cookie,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=3600,
+    )
+    return response
+
+
+@router.get("/verify")
+async def verify_token_endpoint(
+    current_user: Dict[str, Any] = Depends(get_user_payload),
+):
+    """
+    アクセストークンより、ユーザーの認証を行う
+
+    Args:
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
+
+    Returns:
+        dict: トークンが有効であることを示すメッセージ
+
+    Raises:
+        HTTPException: 認証に失敗した場合
+    """
+    print("ここ通ってる？")
+    return {"message": "Token is valid"}

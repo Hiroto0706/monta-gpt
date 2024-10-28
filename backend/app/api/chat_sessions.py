@@ -3,8 +3,9 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from typing import List
+from typing import Any, Dict, List
 from datetime import datetime, timedelta
+from services.users import get_user_payload
 from db.models.message import Message
 from db.connection import get_db_connection
 from db.models.chat_session import ChatSession
@@ -20,9 +21,10 @@ router = APIRouter(prefix="/chat_sessions", tags=["chat_sessions"])
 
 
 # TODO: user_idごとにchat_sessionsを取得するように修正
-@router.get("/{user_id}", response_model=List[ChatSessionResponse])
+@router.get("/", response_model=List[ChatSessionResponse])
 async def get_chat_history(
-    user_id: int, request: Request, db: Session = Depends(get_db_connection)
+    current_user: Dict[str, Any] = Depends(get_user_payload),
+    db: Session = Depends(get_db_connection),
 ):
     """
     指定されたユーザーのチャットセッション履歴を取得します。
@@ -37,6 +39,12 @@ async def get_chat_history(
     Raises:
         HTTPException: データ取得中にエラーが発生した場合
     """
+    user_id = current_user.get("user_id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User ID not found in token payload",
+        )
     try:
         # TODO: DBから取得する前にredisから取得する処理を書く
         chat_sessions = (
@@ -45,7 +53,7 @@ async def get_chat_history(
         if not chat_sessions:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No chat sessions found for user with ID {user_id}",
+                detail=f"No chat sessions found for user with ID {current_user.user_id}",
             )
     except SQLAlchemyError as db_error:
         raise HTTPException(

@@ -1,9 +1,6 @@
 from typing import Any, Dict, Optional
-from fastapi import Depends
-from fastapi.security import (
-    HTTPAuthorizationCredentials,
-    HTTPBearer,
-)
+from fastapi import HTTPException, Request, status
+from jose import JWTError
 from utilities.access_token import verify_access_token
 from db.models.user import User
 from sqlalchemy.orm import Session
@@ -37,12 +34,7 @@ def get_or_create_user(db: Session, username: str, email: str) -> User:
         raise db_error
 
 
-bearer_scheme = HTTPBearer()
-
-
-async def get_user_payload(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Optional[Dict[str, Any]]:
+async def get_user_payload(request: Request) -> Optional[Dict[str, Any]]:
     """
     access_tokenをともに対象のユーザー情報を取得します
 
@@ -52,6 +44,17 @@ async def get_user_payload(
     Returns:
         User: 現在のユーザーオブジェクト
     """
-    token = credentials.credentials
-    payload = verify_access_token(token)
-    return payload
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access token not found in cookies",
+        )
+    try:
+        payload = verify_access_token(token)
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid access token",
+        )

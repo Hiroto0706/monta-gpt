@@ -8,7 +8,7 @@ export default function Home() {
   const handleGoogleLogin = async () => {
     try {
       const response = await fetch(
-        "http://monta-gpt.com/api/auth/google/login"
+        `${process.env.NEXT_PUBLIC_BASE_URL}auth/google/login`
       );
       const data = await response.json();
 
