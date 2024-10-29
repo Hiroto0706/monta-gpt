@@ -25,3 +25,25 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes loadingBar {
+  0%,
+  100% {
+    width: 20%;
+  }
+  50% {
+    width: 100%;
+  }
+}
+
+.animate-loading-bar1 {
+  animation: loadingBar 5s infinite;
+}
+
+.animate-loading-bar2 {
+  animation: loadingBar 5.1s infinite;
+}
+
+.animate-loading-bar3 {
+  animation: loadingBar 5.2s infinite;
+}

@@ -1,30 +1,39 @@
 "use client";
 
 import ChatBoxComponent from "@/components/chatBox";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
-// import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
-export default function New() {
-  // const searchParams = useSearchParams();
-  // const router = useRouter();
-  // const textareaRef = useRef<HTMLTextAreaElement>(null);
+export default function NewThreadPage() {
+  const router = useRouter();
 
-  // useEffect(() => {
-  //   const token = searchParams.get("token");
-  //   if (token) {
-  //     // トークンをクッキーに保存
-  //     Cookies.set("access_token", token, { expires: 7 });
-
-  //     // URLからトークンを削除
-  //     const newSearchParams = new URLSearchParams(searchParams.toString());
-  //     newSearchParams.delete("token");
-  //     const newPathname =
-  //       window.location.pathname +
-  //       (newSearchParams.toString() ? `?${newSearchParams.toString()}` : "");
-  //     router.replace(newPathname);
-  //   }
-  // }, [searchParams, router]);
+  const handleSubmit = async (value: string) => {
+    const formData = {
+      content: value,
+    };
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}chat_sessions/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const threadId = data.id;
+        // 新しいスレッドページにリダイレクト
+        router.push(`/thread/${threadId}`);
+      } else {
+        console.error("Failed to create new chat session");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -33,7 +42,7 @@ export default function New() {
           <p className="text-2xl font-bold mb-8">
             今日は何をお手伝いしましょうか？
           </p>
-          <ChatBoxComponent />
+          <ChatBoxComponent handleSubmit={handleSubmit} />
         </div>
       </div>
     </>

@@ -16,10 +16,13 @@ export default function ChatLayout({
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const response = await fetch("http://monta-gpt.com/api/auth/verify", {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}auth/verify`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
 
         if (response.status !== 200) {
           router.push("/");

@@ -1,6 +1,10 @@
 import React, { useRef } from "react";
 
-const ChatBoxComponent: React.FC = () => {
+interface Props {
+  handleSubmit: (value: string) => void;
+}
+
+const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleInput = () => {
@@ -10,6 +14,17 @@ const ChatBoxComponent: React.FC = () => {
         textareaRef.current.scrollHeight,
         200
       )}px`;
+    }
+  };
+
+  const onSubmit = () => {
+    if (textareaRef.current) {
+      const value = textareaRef.current.value.trim();
+      if (value) {
+        handleSubmit(value);
+        textareaRef.current.value = ""; // テキストエリアをクリア
+        textareaRef.current.style.height = "auto"; // テキストエリアの高さをリセット
+      }
     }
   };
 
@@ -23,7 +38,10 @@ const ChatBoxComponent: React.FC = () => {
           rows={1}
           onInput={handleInput}
         />
-        <button className="absolute bottom-2 right-2 bg-black text-white rounded-full p-2">
+        <button
+          className="absolute bottom-2 right-2 bg-black text-white rounded-full p-2"
+          onClick={onSubmit}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"

@@ -26,7 +26,6 @@ const fetchThreadList = async (): Promise<Thread[]> => {
 };
 
 const SidebarComponent = () => {
-  const router = useRouter();
   const [threads, setThreads] = useState<Thread[]>([]);
 
   useEffect(() => {
@@ -57,15 +56,19 @@ const SidebarComponent = () => {
             </Link>
 
             <div className="max-h-[580px] overflow-y-auto flex flex-col">
-              {threads.map((thread) => (
-                <Link
-                  key={thread.id}
-                  href={`/thread/${thread.id}`}
-                  className="block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis"
-                >
-                  {thread.summary}
-                </Link>
-              ))}
+              {threads.length >= 0 && (
+                <>
+                  {threads.map((thread) => (
+                    <Link
+                      key={thread.id}
+                      href={`/thread/${thread.id}`}
+                      className="block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis"
+                    >
+                      {thread.summary}
+                    </Link>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
