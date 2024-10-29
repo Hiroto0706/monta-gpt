@@ -1,6 +1,5 @@
-from fastapi.responses import RedirectResponse
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Any, Dict, List
@@ -48,7 +47,10 @@ async def get_chat_history(
     try:
         # TODO: DBから取得する前にredisから取得する処理を書く
         chat_sessions = (
-            db.query(ChatSession).filter(ChatSession.user_id == user_id).all()
+            db.query(ChatSession)
+            .filter(ChatSession.user_id == user_id)
+            .order_by(ChatSession.id.desc())
+            .all()
         )
         if not chat_sessions:
             raise HTTPException(
@@ -73,6 +75,7 @@ async def get_chat_history(
 )
 async def create_chat_session(
     chat_session_request: ChatSessionCreateRequest,
+    current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
 ):
     """
@@ -101,7 +104,7 @@ async def create_chat_session(
     )
     async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
         try:
-            response = client.post(
+            response = await client.post(
                 f"{config.AGENT_URL}api/agent/",
                 json={"prompt": chat_session_request.prompt},
             )
@@ -111,8 +114,9 @@ async def create_chat_session(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
             )
 
-    agent_response: str = response.json().get("response")
-    agent_summary: str = response.json().get("summary")
+    agent_response_data = response.json()
+    agent_response = agent_response_data.get("response")
+    agent_summary = agent_response_data.get("summary")
     if not agent_response or not agent_summary:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -129,7 +133,7 @@ async def create_chat_session(
         )
 
         new_chat_session = ChatSession(
-            user_id=chat_session_request.user_id,
+            user_id=current_user.get("user_id"),
             summary=agent_summary,
             start_time=datetime.utcnow(),
             end_time=datetime.utcnow()

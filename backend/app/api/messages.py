@@ -13,6 +13,7 @@ import utilities.config as config
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
+
 @router.get("/{thread_id}", response_model=List[MessageResponse])
 async def get_messages_by_session_id(
     thread_id: int,
@@ -32,8 +33,6 @@ async def get_messages_by_session_id(
     Raises:
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
-    print("ここまできてる？")
-    print(current_user)
     try:
         messages = db.query(Message).filter(Message.session_id == thread_id).all()
         if not messages:
@@ -55,6 +54,7 @@ async def get_messages_by_session_id(
 @router.post("/conversation", response_model=MessageResponse)
 async def send_prompt(
     message_create_request: MessageCreateRequest,
+    current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
 ):
     """

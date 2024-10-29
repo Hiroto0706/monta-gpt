@@ -160,5 +160,4 @@ async def verify_token_endpoint(
     Raises:
         HTTPException: 認証に失敗した場合
     """
-    print("ここ通ってる？")
     return {"message": "Token is valid"}

@@ -8,7 +8,7 @@ export default function NewThreadPage() {
 
   const handleSubmit = async (value: string) => {
     const formData = {
-      content: value,
+      prompt: value,
     };
     try {
       const response = await fetch(

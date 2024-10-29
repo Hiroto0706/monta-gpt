@@ -33,7 +33,6 @@ class ChatSessionResponse(ChatSessionBase):
 
 
 class ChatSessionCreateRequest(BaseModel):
-    user_id: int
     prompt: str
 
 
