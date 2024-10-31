@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 import SidebarComponent from "@/components/sidebar";
 
 export default function ChatLayout({
@@ -39,7 +38,9 @@ export default function ChatLayout({
   return (
     <>
       <SidebarComponent />
-      <div className="pl-48">{children}</div>
+      <div className="pl-48">
+        <div className="w-full h-screen">{children}</div>
+      </div>
     </>
   );
 }
