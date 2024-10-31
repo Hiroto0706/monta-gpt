@@ -6,4 +6,5 @@ export interface Thread {
   end_time: string;
   created_at: string;
   updated_at: string;
+  content?: string;
 }

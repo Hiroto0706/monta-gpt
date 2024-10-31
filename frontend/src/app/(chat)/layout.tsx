@@ -38,7 +38,7 @@ export default function ChatLayout({
   return (
     <>
       <SidebarComponent />
-      <div className="pl-48">
+      <div className="pl-52">
         <div className="w-full h-screen">{children}</div>
       </div>
     </>

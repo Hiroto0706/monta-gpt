@@ -3,6 +3,7 @@
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
 import { Message } from "@/types/messages";
+import { Thread } from "@/types/threads";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -10,7 +11,7 @@ export default function NewThreadPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
-  const [threadID, setThreadID] = useState<number | null>(null);
+  const [threadID, setThreadID] = useState<number>();
 
   {
     /*
@@ -58,20 +59,27 @@ export default function NewThreadPage() {
         }
       );
       if (response.ok) {
-        const data = await response.json();
-        setThreadID(data.id);
-
-        // Update URL without redirecting
-        router.push(`/thread/${data.id}`);
+        const payload = await response.json();
+        setThreadID(payload.id);
 
         // Assume the API returns the assistant's message
-        const assistantMessage: Message = data;
+        const newThread: Thread = payload;
+        const assistantMessage: Message = {
+          content: newThread?.content,
+          is_user: false,
+          session_id: payload.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
 
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages];
           updatedMessages.pop(); // Remove 'generating...' message
           return [...updatedMessages, assistantMessage];
         });
+
+        // Update URL without redirecting
+        router.push(`/thread/${payload.id}`);
       } else {
         console.error("Failed to create new chat session");
         // Handle error by removing 'generating...' message and adding error message

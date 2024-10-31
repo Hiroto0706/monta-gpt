@@ -27,6 +27,7 @@ class ChatSessionResponse(ChatSessionBase):
     end_time: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+    content: Optional[str] = None
 
     class Config:
         orm_mode = True

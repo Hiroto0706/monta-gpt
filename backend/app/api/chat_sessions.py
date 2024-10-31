@@ -95,6 +95,7 @@ async def create_chat_session(
     Raises:
         HTTPException: セッション作成中にエラーが発生した場合
     """
+    print("叩かれてるのこっちですよね")
     user_message = Message(
         session_id=None,
         content=chat_session_request.prompt,
@@ -152,6 +153,16 @@ async def create_chat_session(
         db.commit()
         db.refresh(user_message)
         db.refresh(agent_message)
+
+        response = ChatSessionResponse(
+            id=new_chat_session.id,
+            user_id=new_chat_session.user_id,
+            start_time=new_chat_session.start_time,
+            end_time=new_chat_session.end_time,
+            created_at=new_chat_session.created_at,
+            updated_at=new_chat_session.updated_at,
+            content=agent_message.content,
+        )
         return new_chat_session
     except SQLAlchemyError as db_error:
         db.rollback()

@@ -38,8 +38,9 @@ const SidebarComponent = () => {
 
   return (
     <>
-      <div className="w-48 h-screen bg-gray-200 fixed">
-        <div className="h-screen p-2 flex flex-col justify-between">
+      <div className="w-52 h-screen bg-gray-200 fixed">
+        <div className="h-screen p-4 flex flex-col">
+          {/* ヘッダー部分 */}
           <div>
             <Link
               href="/new"
@@ -53,26 +54,28 @@ const SidebarComponent = () => {
             >
               New chat
             </Link>
-
-            <div className="max-h-[580px] overflow-y-auto flex flex-col">
-              {threads.length >= 0 && (
-                <>
-                  {threads.map((thread) => (
-                    <Link
-                      key={thread.id}
-                      href={`/thread/${thread.id}`}
-                      className="block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis"
-                    >
-                      {thread.summary}
-                    </Link>
-                  ))}
-                </>
-              )}
-            </div>
           </div>
 
+          {/* スレッドリスト */}
+          <div className="flex-grow overflow-y-auto mt-4">
+            {threads.length >= 0 && (
+              <>
+                {threads.map((thread) => (
+                  <Link
+                    key={thread.id}
+                    href={`/thread/${thread.id}`}
+                    className="block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis"
+                  >
+                    {thread.summary}
+                  </Link>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* ログアウトボタン */}
           <div
-            className="mb-2 py-1 px-4 bg-gray-600 border border-gray-600 rounded-xl text-white hover:bg-white hover:text-gray-600 duration-300 cursor-pointer text-center"
+            className="mt-4 py-1 px-4 bg-gray-600 border border-gray-600 rounded-xl text-white hover:bg-white hover:text-gray-600 duration-300 cursor-pointer text-center"
             onClick={logout}
           >
             ログアウト

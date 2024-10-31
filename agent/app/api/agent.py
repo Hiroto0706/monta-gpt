@@ -14,7 +14,7 @@ router = APIRouter(prefix="/agent", tags=["agents"])
 # TODO: 初期生成時のAPIと既存スレッド上の会話は分けた方が良いかも？また、生成ロジックは統一させ、叩くAPIだけ変えればラクに実装できそう
 @router.post("/", response_model=PromptResponse)
 async def generate_response(request: PromptRequest):
-    sleep(10)
-    generated_response = f"Agent response to: {request.prompt}"
-    summary = f"Summary of the response to: {request.prompt}"
+    sleep(5)
+    generated_response = f"this is a user prompt -> {request.prompt} .here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response.here is a system response."
+    summary = f"{request.prompt}"
     return {"response": generated_response, "summary": summary}

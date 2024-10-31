@@ -108,7 +108,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
     adjustFontSize はユーザーの質問の長さより文字のサイズを変化させる関数
     */
   }
-  const adjustFontSize = (content: string) => {
+  const adjustFontSize = (content: string = "") => {
     return content.length > 100 ? "" : "text-3xl";
   };
 

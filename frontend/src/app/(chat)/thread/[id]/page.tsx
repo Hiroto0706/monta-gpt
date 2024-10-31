@@ -27,11 +27,13 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    const loadThreadDetail = async () => {
-      const response = await fetchThreadDetail(params.id);
-      setMessages(response);
-    };
-    loadThreadDetail();
+    if (params.id) {
+      const loadThreadDetail = async () => {
+        const response = await fetchThreadDetail(params.id);
+        setMessages(response);
+      };
+      loadThreadDetail();
+    }
   }, [params.id]);
 
   return (

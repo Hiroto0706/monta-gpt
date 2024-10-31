@@ -1,5 +1,5 @@
 export interface Message {
-  content: string;
+  content?: string;
   is_user: boolean;
   id?: number;
   session_id: number;
