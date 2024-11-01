@@ -31,7 +31,7 @@ export default function NewThreadPage() {
 
     // Add 'generating...' message
     const generatingMessage: Message = {
-      content: "generating...",
+      content: "",
       is_user: false,
       session_id: threadID || 0,
       created_at: new Date().toISOString(),

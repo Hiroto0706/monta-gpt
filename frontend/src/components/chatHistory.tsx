@@ -50,7 +50,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
 
     // "generating..." メッセージを追加
     const generatingMessage: Message = {
-      content: "generating...",
+      content: "",
       is_user: false,
       session_id: threadID,
       created_at: new Date().toISOString(),
@@ -147,7 +147,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
                     className={`${
                       message.is_user
                         ? ""
-                        : "p-4 border-xl bg-gray-100 rounded-xl break-words"
+                        : "break-words"
                     } `}
                   >
                     {message.content}

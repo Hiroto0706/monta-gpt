@@ -38,7 +38,7 @@ const SidebarComponent = () => {
 
   return (
     <>
-      <div className="w-52 h-screen bg-gray-200 fixed">
+      <div className="w-52 h-screen bg-gray-200 fixed drop-shadow-md">
         <div className="h-screen p-4 flex flex-col">
           {/* ヘッダー部分 */}
           <div>
@@ -49,7 +49,7 @@ const SidebarComponent = () => {
               もんたGPT
             </Link>
             <Link
-              className="mb-4 px-2 py-1 w-full bg-white border rounded-xl border-gray-300 text-sm block shadow hover:bg-gray-100 duration-300"
+              className="mb-2 px-2 py-1 w-full bg-white border rounded-xl border-gray-300 text-sm block shadow hover:bg-gray-100 duration-300"
               href="/new"
             >
               New chat
@@ -57,7 +57,7 @@ const SidebarComponent = () => {
           </div>
 
           {/* スレッドリスト */}
-          <div className="flex-grow overflow-y-auto mt-4">
+          <div className="flex-grow overflow-y-auto mt-2">
             {threads.length >= 0 && (
               <>
                 {threads.map((thread) => (
