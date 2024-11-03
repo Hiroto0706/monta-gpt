@@ -69,7 +69,6 @@ async def get_chat_history(
     return chat_sessions
 
 
-# TODO: userからのプロンプトもformDataから受け取る必要あり
 @router.post(
     "/", response_model=ChatSessionResponse, status_code=status.HTTP_201_CREATED
 )
@@ -85,8 +84,8 @@ async def create_chat_session(
     Agentのレスポンスに含まれるsummaryもセッションに保存されます。
 
     Args:
-        prompt (str): ユーザーが送信した最初の質問
-        user_id (int): ユーザーのID
+        chat_session_request (ChatSessionCreateRequest): ユーザーからの質問
+        current_user (Dict[str, Any]): 現在ログインしているユーザーの情報
         db (Session): データベースセッション
 
     Returns:
@@ -95,7 +94,6 @@ async def create_chat_session(
     Raises:
         HTTPException: セッション作成中にエラーが発生した場合
     """
-    print("叩かれてるのこっちですよね")
     user_message = Message(
         session_id=None,
         content=chat_session_request.prompt,

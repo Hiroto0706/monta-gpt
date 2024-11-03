@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from api.router import router as api_router
+from api import router as api_router
 import utilities.config as config
 
 # 全てのモデルのインポート

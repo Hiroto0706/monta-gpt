@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+import logging
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Any, Dict, List
-from fastapi.responses import RedirectResponse
 import httpx
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +12,9 @@ from schemas.message import MessageCreateRequest, MessageResponse
 import utilities.config as config
 
 router = APIRouter(prefix="/messages", tags=["messages"])
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 @router.get("/{thread_id}", response_model=List[MessageResponse])
@@ -77,11 +80,32 @@ async def send_prompt(
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
+    conversation_histories = (
+        db.query(Message)
+        .filter(Message.session_id == message_create_request.session_id)
+        .order_by(Message.id.desc())
+        .limit(10)
+        .all()
+    )
+    formatted_conversation = [
+        {
+            "content": msg.content,
+            "is_user": msg.is_user,
+            "created_at": msg.created_at.isoformat(),
+        }
+        for msg in conversation_histories
+    ]
+
+    logger.info(f"formatted_conversation: {formatted_conversation}")
+
     async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
         try:
             response = await client.post(
                 f"{config.AGENT_URL}api/agent/",
-                json={"prompt": message_create_request.prompt},
+                json={
+                    "prompt": message_create_request.prompt,
+                    "conversation": formatted_conversation,
+                },
             )
             response.raise_for_status()
         except httpx.RequestError as e:
