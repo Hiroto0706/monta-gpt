@@ -9,3 +9,4 @@ load_dotenv(env_file, override=True)
 
 ENV = os.getenv("ENV", "dev")
 ALLOW_ORIGIN = os.getenv("ALLOW_ORIGIN", "http://localhost:8000")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

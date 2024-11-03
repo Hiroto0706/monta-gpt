@@ -3,5 +3,8 @@
 backend/app/.env.dev
 backend/app/.env.prd
 
+# agent
+agent/app/.env.dev
+
 # all
 /.vscode
