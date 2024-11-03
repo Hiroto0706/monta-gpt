@@ -4,6 +4,9 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from db.models.user import User
 import logging
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 def get_user(db: Session, user_id: int) -> Optional[User]:
     """
@@ -12,7 +15,7 @@ def get_user(db: Session, user_id: int) -> Optional[User]:
     try:
         return db.query(User).filter(User.id == user_id).first()
     except SQLAlchemyError as e:
-        logging.error(f"Error retrieving user with id {user_id}: {str(e)}")
+        logger.error(f"Error retrieving user with id {user_id}: {str(e)}")
         return None
 
 
@@ -28,11 +31,11 @@ def create_user(db: Session, username: str, email: str) -> Optional[User]:
         return db_user
     except IntegrityError as e:
         db.rollback()
-        logging.error(f"Integrity error while creating user: {str(e)}")
+        logger.error(f"Integrity error while creating user: {str(e)}")
         return None
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error creating user: {str(e)}")
+        logger.error(f"Error creating user: {str(e)}")
         return None
 
 
@@ -58,11 +61,11 @@ def update_user(
         return None
     except IntegrityError as e:
         db.rollback()
-        logging.error(f"Integrity error while updating user: {str(e)}")
+        logger.error(f"Integrity error while updating user: {str(e)}")
         return None
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error updating user: {str(e)}")
+        logger.error(f"Error updating user: {str(e)}")
         return None
 
 
@@ -79,5 +82,5 @@ def delete_user(db: Session, user_id: int) -> bool:
         return False
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error deleting user: {str(e)}")
+        logger.error(f"Error deleting user: {str(e)}")
         return False

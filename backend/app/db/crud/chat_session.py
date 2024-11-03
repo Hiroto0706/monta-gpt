@@ -4,6 +4,9 @@ from db.models.chat_session import ChatSession
 import logging
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 def get_chat_sessions_by_user_id(
     db: Session, user_id: int, skip: int = 0, limit: int = 100
@@ -21,7 +24,7 @@ def get_chat_sessions_by_user_id(
             .all()
         )
     except SQLAlchemyError as e:
-        logging.error(f"Error retrieving chat sessions for user {user_id}: {str(e)}")
+        logger.error(f"Error retrieving chat sessions for user {user_id}: {str(e)}")
         return None
 
 
@@ -39,7 +42,7 @@ def create_chat_session(db: Session, user_id: int, start_time: datetime = None):
         return db_chat_session
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error creating chat session: {str(e)}")
+        logger.error(f"Error creating chat session: {str(e)}")
         return None
 
 
@@ -59,7 +62,7 @@ def update_chat_session_summary(db: Session, session_id: int, summary: str):
         return None
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error updating chat session summary: {str(e)}")
+        logger.error(f"Error updating chat session summary: {str(e)}")
         return None
 
 
@@ -78,5 +81,5 @@ def delete_chat_session(db: Session, session_id: int):
         return False
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error deleting chat session: {str(e)}")
+        logger.error(f"Error deleting chat session: {str(e)}")
         return False

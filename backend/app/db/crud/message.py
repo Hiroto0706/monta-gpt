@@ -3,6 +3,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from db.models.message import Message
 import logging
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 def get_messages_by_session_id(
     db: Session, session_id: int, skip: int = 0, limit: int = 100
@@ -20,7 +23,7 @@ def get_messages_by_session_id(
             .all()
         )
     except SQLAlchemyError as e:
-        logging.error(f"Error retrieving messages for session {session_id}: {str(e)}")
+        logger.error(f"Error retrieving messages for session {session_id}: {str(e)}")
         return None
 
 
@@ -31,7 +34,7 @@ def get_message_by_id(db: Session, message_id: int):
     try:
         return db.query(Message).filter(Message.id == message_id).first()
     except SQLAlchemyError as e:
-        logging.error(f"Error retrieving message with id {message_id}: {str(e)}")
+        logger.error(f"Error retrieving message with id {message_id}: {str(e)}")
         return None
 
 
@@ -47,5 +50,5 @@ def create_message(db: Session, session_id: int, content: str, is_user: bool):
         return db_message
     except SQLAlchemyError as e:
         db.rollback()
-        logging.error(f"Error creating message: {str(e)}")
+        logger.error(f"Error creating message: {str(e)}")
         return None
