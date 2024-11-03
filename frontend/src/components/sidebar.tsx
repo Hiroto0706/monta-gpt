@@ -3,7 +3,11 @@
 import { logout } from "@/lib/utils";
 import { Thread } from "@/types/threads";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+
+interface Props {
+  threadID: number | null;
+}
 
 const fetchThreadList = async (): Promise<Thread[]> => {
   try {
@@ -24,7 +28,7 @@ const fetchThreadList = async (): Promise<Thread[]> => {
   }
 };
 
-const SidebarComponent = () => {
+const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
 
   useEffect(() => {
@@ -60,15 +64,20 @@ const SidebarComponent = () => {
           <div className="flex-grow overflow-y-auto mt-2">
             {threads.length >= 0 && (
               <>
-                {threads.map((thread) => (
-                  <Link
-                    key={thread.id}
-                    href={`/thread/${thread.id}`}
-                    className="block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis"
-                  >
-                    {thread.summary}
-                  </Link>
-                ))}
+                {threads.map((thread) => {
+                  const isActive = threadID === thread.id;
+                  return (
+                    <Link
+                      key={thread.id}
+                      href={`/thread/${thread.id}`}
+                      className={`block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis text-xs ${
+                        isActive ? "bg-gray-300" : ""
+                      }`}
+                    >
+                      {thread.summary}
+                    </Link>
+                  );
+                })}
               </>
             )}
           </div>

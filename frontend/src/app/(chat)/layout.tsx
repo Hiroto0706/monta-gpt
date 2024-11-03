@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import SidebarComponent from "@/components/sidebar";
 
 export default function ChatLayout({
@@ -10,6 +10,8 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const [threadId, setThreadId] = useState<number | null>(null);
 
   // 認証処理
   useEffect(() => {
@@ -35,9 +37,17 @@ export default function ChatLayout({
     verifyToken();
   }, [router]);
 
+  useEffect(() => {
+    const pathParts = pathname.split("/");
+    const lastPart = pathParts[pathParts.length - 1];
+    if (lastPart) {
+      setThreadId(Number(lastPart));
+    }
+  }, [pathname]);
+
   return (
     <>
-      <SidebarComponent />
+      <SidebarComponent threadID={threadId} />
       <div className="pl-52">
         <div className="w-full h-screen">{children}</div>
       </div>
