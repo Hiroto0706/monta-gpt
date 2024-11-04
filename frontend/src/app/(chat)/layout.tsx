@@ -12,6 +12,7 @@ export default function ChatLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [threadId, setThreadId] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   // 認証処理
   useEffect(() => {
@@ -47,8 +48,14 @@ export default function ChatLayout({
 
   return (
     <>
-      <SidebarComponent threadID={threadId} />
-      <div className="pl-52">
+      <SidebarComponent
+        threadID={threadId}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+      />
+      <div
+        className={`duration-300 transition-all ${isOpen ? "pl-52" : "pl-0"}`}
+      >
         <div className="w-full h-screen">{children}</div>
       </div>
     </>

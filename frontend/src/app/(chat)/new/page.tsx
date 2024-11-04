@@ -87,7 +87,7 @@ export default function NewThreadPage() {
           const updatedMessages = [...prevMessages];
           updatedMessages.pop(); // Remove 'generating...' message
           const errorMessage: Message = {
-            content: "Failed to create new chat session.",
+            content: "スレッドの作成に失敗しました。再度実行してください。",
             is_user: false,
             session_id: threadID || 0,
             created_at: new Date().toISOString(),
@@ -117,11 +117,12 @@ export default function NewThreadPage() {
   return (
     <>
       {chatStarted ? (
-        <ChatHistoryComponent
-          threadID={threadID || 0}
-          messages={messages}
-          setMessages={setMessages}
-        />
+        <>
+          <ChatHistoryComponent messages={messages} />
+          {/* <div className="fixed bottom-0 w-full max-w-[640px] left-[calc(50%+6rem)] transform -translate-x-1/2 p-4 z-10">
+            <ChatBoxComponent handleSubmit={handleSubmit} />
+          </div> */}
+        </>
       ) : (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center w-full max-w-[640px] mx-4">

@@ -113,7 +113,8 @@ async def create_chat_session(
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
+    timeout = httpx.Timeout(connect=15.0, read=60.0, write=60.0, pool=5.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             response = await client.post(
                 f"{config.AGENT_URL}api/agent/",

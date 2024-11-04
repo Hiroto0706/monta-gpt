@@ -29,8 +29,8 @@ async def generate_response(request: PromptRequest):
     else:
         conversation_history = ""
 
+    logger.info("Request received")
     try:
-        logger.info("Request received")
 
         # System prompt with specified requirements
         system_template = ChatPromptTemplate.from_messages(
