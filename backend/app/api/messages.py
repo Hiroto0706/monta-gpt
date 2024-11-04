@@ -14,7 +14,7 @@ import utilities.config as config
 router = APIRouter(prefix="/messages", tags=["messages"])
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger.setLevel(logging.INFO)
 
 
 @router.get("/{thread_id}", response_model=List[MessageResponse])
@@ -28,6 +28,7 @@ async def get_messages_by_session_id(
 
     Args:
         thread_id (int): メッセージを取得するスレッドのID
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
 
     Returns:
@@ -39,17 +40,26 @@ async def get_messages_by_session_id(
     try:
         messages = db.query(Message).filter(Message.session_id == thread_id).all()
         if not messages:
+            logger.info(f"No messages found for thread ID {thread_id}.")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Messages not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No messages found for thread ID {thread_id}.",
             )
     except SQLAlchemyError as db_error:
+        logger.error(
+            f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}",
         )
     except Exception as e:
+        logger.error(
+            f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}"
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}",
         )
     return messages
 
@@ -65,6 +75,7 @@ async def send_prompt(
 
     Args:
         message_create (MessageCreate): スレッドIDとユーザーのプロンプトを含むメッセージデータ
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
 
     Returns:
@@ -96,7 +107,9 @@ async def send_prompt(
         for msg in conversation_histories
     ]
 
-    logger.info(f"formatted_conversation: {formatted_conversation}")
+    logger.info(
+        f"Formatted conversation history for session {message_create_request.session_id}: {formatted_conversation}"
+    )
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
         try:
@@ -109,10 +122,14 @@ async def send_prompt(
             )
             response.raise_for_status()
         except httpx.RequestError as e:
+            logger.error(f"HTTP request error while contacting agent API: {str(e)}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"HTTP request error while contacting agent API: {str(e)}",
             )
         agent_response_content = response.json().get("response")
+        logger.info(f"Agent response: {agent_response_content}")
+
         agent_message = Message(
             session_id=message_create_request.session_id,
             content=agent_response_content,
@@ -126,15 +143,26 @@ async def send_prompt(
         db.commit()
         db.refresh(user_message)
         db.refresh(agent_message)
+        logger.info(
+            f"Successfully added user and agent messages to session {message_create_request.session_id}"
+        )
         return agent_message
     except SQLAlchemyError as db_error:
         db.rollback()
+        logger.error(
+            f"Database error while saving messages for session {message_create_request.session_id}: {str(db_error)}"
+        )
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error while saving messages for session {message_create_request.session_id}: {str(db_error)}",
         )
     except Exception as e:
         db.rollback()
+        logger.error(
+            f"Unexpected error while saving messages for session {message_create_request.session_id}: {str(e)}"
+        )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error while saving messages for session {message_create_request.session_id}: {str(e)}",
         )

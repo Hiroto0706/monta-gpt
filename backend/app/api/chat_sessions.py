@@ -1,3 +1,4 @@
+import logging
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -18,6 +19,9 @@ import utilities.config as config
 
 router = APIRouter(prefix="/chat_sessions", tags=["chat_sessions"])
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 # TODO: user_idごとにchat_sessionsを取得するように修正
 @router.get("/", response_model=List[ChatSessionResponse])
@@ -29,7 +33,7 @@ async def get_chat_history(
     指定されたユーザーのチャットセッション履歴を取得します。
 
     Args:
-        user_id (int): ユーザーのID
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
 
     Returns:
@@ -40,9 +44,10 @@ async def get_chat_history(
     """
     user_id = current_user.get("user_id")
     if not user_id:
+        logger.warning("Unauthorized access attempt, user_id not found.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User ID not found in token payload",
+            detail="Unauthorized access attempt, user_id not found.",
         )
     try:
         # TODO: DBから取得する前にredisから取得する処理を書く
@@ -53,19 +58,26 @@ async def get_chat_history(
             .all()
         )
         if not chat_sessions:
+            logger.info(f"No chat sessions found for user with ID {user_id}.")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No chat sessions found for user with ID {current_user.user_id}",
+                detail=f"No chat sessions found for user with ID {user_id}.",
             )
     except SQLAlchemyError as db_error:
+        logger.error(
+            f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}",
         )
     except Exception as e:
+        logger.error(f"Unexpected error occurred: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error occurred: {str(e)}",
         )
+    logger.info(f"Successfully retrieved chat sessions for user {user_id}")
     return chat_sessions
 
 
@@ -109,17 +121,23 @@ async def create_chat_session(
             )
             response.raise_for_status()
         except httpx.RequestError as e:
+            logger.error(f"Request error while contacting agent API: {str(e)}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Request error while contacting agent API: {str(e)}",
             )
 
     agent_response_data = response.json()
     agent_response = agent_response_data.get("response")
     agent_summary = agent_response_data.get("summary")
+
+    logger.info(f"agent_response: {agent_response}\n agent_summary: {agent_summary}\n")
+
     if not agent_response or not agent_summary:
+        logger.error("Invalid response from agent API, missing response or summary.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Invalid response from agent API",
+            detail="Invalid response from agent API, missing response or summary.",
         )
 
     try:
@@ -152,6 +170,10 @@ async def create_chat_session(
         db.refresh(user_message)
         db.refresh(agent_message)
 
+        logger.info(
+            f"Chat session and messages inserted successfully for user {current_user.get('user_id')}"
+        )
+
         response = ChatSessionResponse(
             id=new_chat_session.id,
             user_id=new_chat_session.user_id,
@@ -164,16 +186,18 @@ async def create_chat_session(
         return new_chat_session
     except SQLAlchemyError as db_error:
         db.rollback()
+        logger.error(f"Database error during chat session creation: {str(db_error)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error during chat session creation: {str(db_error)}",
         )
     except Exception as e:
         db.rollback()
+        logger.error(f"Unexpected error during chat session creation: {str(e)}")
         # FIXME: ここのエラーは統一させたいので関数化させる
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred: {str(e)}",
+            detail=f"Unexpected error during chat session creation: {str(e)}",
         )
 
     # TODO: redisに追加したセッションを追加する処理
@@ -185,13 +209,16 @@ async def create_chat_session(
     status_code=status.HTTP_200_OK,
 )
 async def delete_chat_session(
-    session_id: int, db: Session = Depends(get_db_connection)
+    session_id: int,
+    current_user: Dict[str, Any] = Depends(get_user_payload),
+    db: Session = Depends(get_db_connection),
 ):
     """
     指定されたチャットセッションと、そのセッションに関連するメッセージを削除します。
 
     Args:
         session_id (int): 削除対象のセッションID
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
 
     Returns:
@@ -205,8 +232,10 @@ async def delete_chat_session(
             db.query(ChatSession).filter(ChatSession.id == session_id).first()
         )
         if chat_session is None:
+            logger.warning(f"Attempted to delete non-existent session {session_id}")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Chat session not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Attempted to delete non-existent session {session_id}",
             )
 
         messages = db.query(Message).filter(Message.session_id == session_id).all()
@@ -216,22 +245,32 @@ async def delete_chat_session(
         db.delete(chat_session)
         db.commit()
 
+        logger.info(
+            f"Chat session {session_id} and related messages deleted successfully"
+        )
+
         # TODO: Redisからも対象のセッションを削除する処理を追加
 
-        return {"message": "Delete successfully"}
+        return ChatSessionDeleteResponse(message="Delete Successfully")
 
     except SQLAlchemyError as db_error:
         db.rollback()
+        logger.error(
+            f"Database error during deletion of session {session_id}: {str(db_error)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error during deletion of session {session_id}: {str(db_error)}",
         )
 
     except Exception as e:
         db.rollback()
+        logger.error(
+            f"Unexpected error during deletion of session {session_id}: {str(e)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
+            detail=f"Unexpected error during deletion of session {session_id}: {str(e)}",
         )
 
 
@@ -239,6 +278,7 @@ async def delete_chat_session(
 async def update_chat_session(
     session_id: int,
     chat_session_update: ChatSessionUpdate,
+    current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
 ):
     """
@@ -247,6 +287,7 @@ async def update_chat_session(
     Args:
         session_id (int): 更新対象のセッションID
         chat_session_update (ChatSessionUpdate): 更新する内容
+        current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
 
     Returns:
@@ -257,8 +298,10 @@ async def update_chat_session(
     """
     chat_session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
     if chat_session is None:
+        logger.warning(f"Attempted to update non-existent session {session_id}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chat session not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attempted to update non-existent session {session_id}",
         )
     try:
         chat_session.summary = chat_session_update.summary
@@ -266,18 +309,26 @@ async def update_chat_session(
         db.commit()
         db.refresh(chat_session)
 
+        logger.info(f"Chat session {session_id} updated successfully")
+
         # TODO: redisの値も更新
         return chat_session
     except SQLAlchemyError as db_error:
         db.rollback()
+        logger.error(
+            f"Database error during update of session {session_id}: {str(db_error)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(db_error)}",
+            detail=f"Database error during update of session {session_id}: {str(db_error)}",
         )
 
     except Exception as e:
         db.rollback()
+        logger.error(
+            f"Unexpected error during update of session {session_id}: {str(e)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred: {str(e)}",
+            detail=f"Unexpected error during update of session {session_id}: {str(e)}",
         )

@@ -8,7 +8,7 @@ import utilities.config as config
 router = APIRouter(prefix="/agent", tags=["agents"])
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger.setLevel(logging.INFO)
 
 
 # FIXME: thread_idはAgent側で生成してもらい、それをもとに作成することにする
@@ -82,5 +82,5 @@ async def generate_response(request: PromptRequest):
         return PromptResponse(response=res.content, summary=request.prompt)
 
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        logger.error(f"An exception error occurred: {e}")
+        raise HTTPException(status_code=500, detail=f"An exception error occurred: {e}")
