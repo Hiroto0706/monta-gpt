@@ -1,15 +1,14 @@
 "use client";
 
+import { useSidebar } from "@/contexts/SidebarContext";
 import { logout } from "@/lib/utils";
 import { Thread } from "@/types/threads";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Props {
   threadID: number | null;
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const fetchThreadList = async (): Promise<Thread[]> => {
@@ -31,9 +30,15 @@ const fetchThreadList = async (): Promise<Thread[]> => {
   }
 };
 
-const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
+const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
-  // const [isOpen, setIsOpen] = useState(true);
+  const { isOpen, toggleSidebar } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+  };
 
   useEffect(() => {
     const loadThreads = async () => {
@@ -46,9 +51,16 @@ const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
 
   return (
     <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-10 md:hidden"
+          onClick={() => toggleSidebar()}
+        ></div>
+      )}
+
       {/* サイドバー本体 */}
       <div
-        className={`h-screen fixed border-r transition-all duration-300 overflow-hidden bg-gray-200 ${
+        className={`h-screen fixed z-20 border-r transition-all duration-300 overflow-hidden bg-gray-200 ${
           isOpen ? "w-52" : "w-0 border-r-0"
         }`}
       >
@@ -57,7 +69,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
             {/* 閉じるアイコン */}
             <div
               className="absolute top-1 left-1 p-1 hover:bg-gray-300 duration-300 rounded-lg cursor-pointer"
-              onClick={() => setIsOpen(false)}
+              onClick={() => toggleSidebar()}
             >
               <Image
                 src="/icons/sidebar-close.png"
@@ -72,12 +84,14 @@ const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
               <Link
                 href="/new"
                 className="text-2xl my-4 flex justify-center hover:opacity-70 duration-300"
+                onClick={() => handleLinkClick()}
               >
                 もんたGPT
               </Link>
               <Link
                 className="mb-2 px-2 py-1 w-full bg-white border rounded-xl border-gray-300 text-sm block shadow hover:bg-gray-100 duration-300"
                 href="/new"
+                onClick={() => handleLinkClick()}
               >
                 New chat
               </Link>
@@ -96,6 +110,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
                         className={`block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis text-xs ${
                           isActive ? "bg-gray-300" : ""
                         }`}
+                        onClick={() => handleLinkClick()}
                       >
                         {thread.summary}
                       </Link>
@@ -121,7 +136,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID, isOpen, setIsOpen }) => {
         className={`fixed top-1 left-1 p-1 hover:bg-gray-300 duration-300 rounded-lg cursor-pointer ${
           isOpen ? "hidden" : ""
         }`}
-        onClick={() => setIsOpen(true)}
+        onClick={() => toggleSidebar()}
       >
         <Image
           src="/icons/sidebar-open.png"

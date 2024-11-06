@@ -40,7 +40,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
   return (
     <>
       <div className="flex flex-col">
-        <div className="flex-grow overflow-y-auto p-16">
+        <div className="flex-grow overflow-y-auto p-4 md:p-16 mb-8">
           {messages.length >= 0 && (
             <>
               {messages.map((message, index) => (
@@ -55,7 +55,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
                   }`}
                 >
                   {!message.is_user && (
-                    <div className="flex items-center mb-8">
+                    <div className="flex items-center mb-4">
                       <>
                         <div className="rounded-full bg-gray-300 w-8 h-8 flex items-center justify-center mr-2">
                           A

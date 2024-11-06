@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <>
       <div className="flex h-screen justify-center items-center">
-        <main className="flex flex-col justify-center items-center p-16 bg-white rounded-lg border border-gray-200">
+        <main className="flex flex-col justify-center items-center p-8 md:p-16 bg-white rounded-lg border border-gray-200">
           <h1 className="text-3xl font-bold my-16">もんたGPT</h1>
           <button
             onClick={() => handleGoogleLogin()}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import SidebarComponent from "@/components/sidebar";
+import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 
 export default function ChatLayout({
   children,
@@ -12,7 +13,6 @@ export default function ChatLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [threadId, setThreadId] = useState<number | null>(null);
-  const [isOpen, setIsOpen] = useState(true);
 
   // 認証処理
   useEffect(() => {
@@ -48,13 +48,38 @@ export default function ChatLayout({
 
   return (
     <>
+      <SidebarProvider>
+        <ChatLayoutContent threadId={threadId}>{children}</ChatLayoutContent>
+      </SidebarProvider>
+    </>
+  );
+}
+
+function ChatLayoutContent({
+  children,
+  threadId,
+}: {
+  children: React.ReactNode;
+  threadId: number | null;
+}) {
+  const { isOpen, toggleSidebar } = useSidebar();
+
+  useEffect(() => {
+    const breakPoint = 768;
+    if (window.innerWidth >= breakPoint) {
+      toggleSidebar(true);
+    }
+  }, []);
+
+  return (
+    <>
       <SidebarComponent
         threadID={threadId}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
       />
       <div
-        className={`duration-300 transition-all ${isOpen ? "pl-52" : "pl-0"}`}
+        className={`duration-300 transition-all ${
+          isOpen ? "pl-0 md:pl-52" : "pl-0"
+        }`}
       >
         <div className="w-full h-screen">{children}</div>
       </div>

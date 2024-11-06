@@ -2,6 +2,7 @@
 
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { Message } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
 
@@ -27,6 +28,7 @@ const fetchThreadDetail = async (threadId: number): Promise<Message[]> => {
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isOpen } = useSidebar();
 
   {
     /*
@@ -67,7 +69,6 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
       session_id: params.id,
       prompt: value,
     };
-    console.log(formData);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}messages/conversation`,
@@ -122,7 +123,11 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
         messagesEndRef={messagesEndRef}
       />
 
-      <div className="fixed bottom-0 w-full max-w-[640px] left-[calc(50%+6rem)] transform -translate-x-1/2 p-4 z-10">
+      <div
+        className={`fixed bottom-0 w-full max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
+          !isOpen ? "" : "md:left-[calc(50%+6rem)]"
+        }`}
+      >
         <ChatBoxComponent handleSubmit={handleSubmit} />
       </div>
     </>

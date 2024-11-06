@@ -2,6 +2,7 @@
 
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { Message } from "@/types/messages";
 import { Thread } from "@/types/threads";
 import { useRouter } from "next/navigation";
@@ -12,6 +13,7 @@ export default function NewThreadPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
   const [threadID, setThreadID] = useState<number>();
+  const { isOpen } = useSidebar();
 
   {
     /*
@@ -119,9 +121,13 @@ export default function NewThreadPage() {
       {chatStarted ? (
         <>
           <ChatHistoryComponent messages={messages} />
-          {/* <div className="fixed bottom-0 w-full max-w-[640px] left-[calc(50%+6rem)] transform -translate-x-1/2 p-4 z-10">
+          <div
+            className={`fixed bottom-0 w-full max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
+              !isOpen ? "" : "md:left-[calc(50%+6rem)]"
+            }`}
+          >
             <ChatBoxComponent handleSubmit={handleSubmit} />
-          </div> */}
+          </div>
         </>
       ) : (
         <div className="flex items-center justify-center h-screen">
