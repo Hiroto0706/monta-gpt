@@ -1,11 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 interface Props {
-  handleSubmit: (value: string) => void;
+  handleSubmit: (value: string) => Promise<void>;
 }
 
 const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
 
   const handleInput = () => {
     if (textareaRef.current) {
@@ -17,15 +19,43 @@ const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
     }
   };
 
-  const onSubmit = () => {
-    if (textareaRef.current) {
-      const value = textareaRef.current.value.trim();
-      if (value) {
-        handleSubmit(value);
-        textareaRef.current.value = ""; // テキストエリアをクリア
-        textareaRef.current.style.height = "auto"; // テキストエリアの高さをリセット
+  const onSubmit = async () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const value = textarea.value.trim();
+    if (value) {
+      setIsSubmitting(true);
+      textarea.value = "";
+      textarea.style.height = "auto";
+      try {
+        await handleSubmit(value);
+      } catch (error) {
+        console.error("Error submitting message:", error);
+      } finally {
+        setIsSubmitting(false);
       }
     }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !isSubmitting &&
+      !isComposing
+    ) {
+      event.preventDefault();
+      onSubmit();
+    }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
   };
 
   return (
@@ -37,10 +67,18 @@ const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
           className="rounded-3xl w-full pl-4 pr-9 py-1 text-gray-700 focus:outline-none resize-none overflow-y-auto"
           rows={1}
           onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
         />
         <button
-          className="absolute bottom-2 right-2 bg-black text-white rounded-full p-2"
+          className={`absolute bottom-2 right-2 rounded-full p-2 ${
+            isSubmitting
+              ? "bg-gray-200 cursor-not-allowed"
+              : "bg-black text-white"
+          }`}
           onClick={onSubmit}
+          disabled={isSubmitting}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
