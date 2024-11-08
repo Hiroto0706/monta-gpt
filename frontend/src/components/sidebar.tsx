@@ -53,7 +53,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-10 md:hidden"
+          className="fixed inset-0 bg-white opacity-30 z-10 md:hidden"
           onClick={() => toggleSidebar()}
         ></div>
       )}

@@ -133,7 +133,7 @@ export default function NewThreadPage() {
         <div className="flex items-center justify-center h-screen">
           <div className="text-center w-full max-w-[640px] mx-4">
             <p className="text-2xl font-bold mb-8">
-              今日は何をお手伝いしましょうか？
+              なんでも聞いてや〜
             </p>
             <ChatBoxComponent handleSubmit={handleSubmit} />
           </div>

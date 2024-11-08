@@ -38,7 +38,12 @@ async def get_messages_by_session_id(
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
     try:
-        messages = db.query(Message).filter(Message.session_id == thread_id).all()
+        messages = (
+            db.query(Message)
+            .filter(Message.session_id == thread_id)
+            .order_by(Message.id)
+            .all()
+        )
         if not messages:
             logger.info(f"No messages found for thread ID {thread_id}.")
             raise HTTPException(
