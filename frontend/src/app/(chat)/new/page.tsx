@@ -1,8 +1,15 @@
 "use client";
 
+import { CreateThread } from "@/api/threads";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSidebar } from "@/hook/sidebar";
+import {
+  CreateAgentMessage,
+  CreateErrorMessage,
+  CreateGeneratingMessage,
+  CreateUserMessage,
+} from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { Thread } from "@/types/threads";
 import { useRouter } from "next/navigation";
@@ -12,105 +19,46 @@ export default function NewThreadPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
-  const [threadID, setThreadID] = useState<number>();
   const { isOpen } = useSidebar();
 
-  {
-    /*
+  /*
     handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
-    */
-  }
+  */
   const handleSubmit = async (value: string) => {
     // Add user's message to messages
-    const userMessage: Message = {
-      content: value,
-      is_user: true,
-      session_id: threadID || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    const userMessage = CreateUserMessage(value);
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     // Add 'generating...' message
-    const generatingMessage: Message = {
-      content: "",
-      is_user: false,
-      session_id: threadID || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_generating: true,
-    };
+    const generatingMessage = CreateGeneratingMessage();
     setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
     // Set chatStarted to true to display ChatHistoryComponent
     setChatStarted(true);
 
-    const formData = {
-      prompt: value,
-    };
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}chat_sessions/`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-      if (response.ok) {
-        const payload = await response.json();
-        setThreadID(payload.id);
-
-        // Assume the API returns the assistant's message
-        const newThread: Thread = payload;
-        const assistantMessage: Message = {
-          content: newThread?.content,
-          is_user: false,
-          session_id: payload.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          updatedMessages.pop(); // Remove 'generating...' message
-          return [...updatedMessages, assistantMessage];
-        });
-
-        // Update URL without redirecting
-        router.push(`/thread/${payload.id}`);
-      } else {
-        console.error("Failed to create new chat session");
-        // Handle error by removing 'generating...' message and adding error message
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          updatedMessages.pop(); // Remove 'generating...' message
-          const errorMessage: Message = {
-            content: "スレッドの作成に失敗しました。再度実行してください。",
-            is_user: false,
-            session_id: threadID || 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          return [...updatedMessages, errorMessage];
-        });
+      const response = await CreateThread(value);
+      // Assume the API returns the assistant's message
+      const newThread: Thread = response;
+      let assistantMessage: Message;
+      if (newThread.content !== undefined) {
+        assistantMessage = CreateAgentMessage(newThread?.content, newThread.id);
       }
+
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages.pop(); // Remove 'generating...' message
+        return [...updatedMessages, assistantMessage];
+      });
+
+      router.push(`/thread/${newThread.id}`);
     } catch (error) {
       console.error(error);
       // Handle error by removing 'generating...' message and adding error message
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         updatedMessages.pop(); // Remove 'generating...' message
-        const errorMessage: Message = {
-          content: "An unexpected error occurred. Please try again.",
-          is_user: false,
-          session_id: threadID || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+        const errorMessage = CreateErrorMessage();
         return [...updatedMessages, errorMessage];
       });
     }
@@ -132,9 +80,7 @@ export default function NewThreadPage() {
       ) : (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center w-full max-w-[640px] mx-4">
-            <p className="text-2xl font-bold mb-8">
-              なんでも聞いてや〜
-            </p>
+            <p className="text-2xl font-bold mb-8">なんでも聞いてや〜</p>
             <ChatBoxComponent handleSubmit={handleSubmit} />
           </div>
         </div>

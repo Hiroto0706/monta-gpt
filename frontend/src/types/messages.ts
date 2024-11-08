@@ -7,3 +7,8 @@ export interface Message {
   updated_at: string;
   is_generating?: boolean;
 }
+
+export interface ContinueConversationRequest {
+  session_id: number;
+  prompt: string;
+}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useSidebar } from "@/contexts/SidebarContext";
+import { FetchThreadList } from "@/api/threads";
+import { useSidebar } from "@/hook/sidebar";
 import { logout } from "@/lib/utils";
 import { Thread } from "@/types/threads";
 import Image from "next/image";
@@ -10,25 +11,6 @@ import React, { useEffect, useState } from "react";
 interface Props {
   threadID: number | null;
 }
-
-const fetchThreadList = async (): Promise<Thread[]> => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}chat_sessions/`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
 
 const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -42,7 +24,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
 
   useEffect(() => {
     const loadThreads = async () => {
-      const fetchedThreads = await fetchThreadList();
+      const fetchedThreads = await FetchThreadList();
       setThreads(fetchedThreads);
     };
 

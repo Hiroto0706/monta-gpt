@@ -1,115 +1,62 @@
 "use client";
 
+import { ContinueConversation, FetchMessagesList } from "@/api/messages";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSidebar } from "@/hook/sidebar";
+import {
+  CreateErrorMessage,
+  CreateGeneratingMessage,
+  CreateUserMessage,
+} from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
-
-const fetchThreadDetail = async (threadId: number): Promise<Message[]> => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}messages/${threadId}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
 
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isOpen } = useSidebar();
 
-  {
-    /*
+  /*
     handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
-    */
-  }
+  */
   const handleSubmit = async (value: string) => {
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     // FIXME: idはwebsocket通信よりidが帰ってきたらmessagesに追加するようにする
-    const userMessage: Message = {
-      content: value,
-      is_user: true,
-      session_id: params.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
+    const userMessage = CreateUserMessage(value);
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     // "generating..." メッセージを追加
-    const generatingMessage: Message = {
-      content: "",
-      is_user: false,
-      session_id: params.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_generating: true,
-    };
+    const generatingMessage = CreateGeneratingMessage();
     setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
     // 画面を一番下にスクロール
     scrollToBottom();
 
-    const formData = {
-      session_id: params.id,
-      prompt: value,
-    };
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}messages/conversation`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-      if (response.ok) {
-        const newMessage = await response.json();
+      const threadID = params.id;
+      const response = await ContinueConversation(threadID, value);
 
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          updatedMessages.pop(); // "generating..." メッセージを削除
-          return [...updatedMessages, newMessage];
-        });
-      } else {
-        console.error("Failed to send message");
-      }
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages.pop(); // "generating..." メッセージを削除
+        return [...updatedMessages, response];
+      });
     } catch (error) {
       console.error(error);
       // エラーメッセージを会話に追加
-      const generatingMessage: Message = {
-        content: "予期せぬエラーが発生しました。再度実行してください。",
-        is_user: false,
-        session_id: params.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setMessages((prevMessages) => [...prevMessages, generatingMessage]);
+      const errorMessage = CreateErrorMessage();
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
   };
 
   useEffect(() => {
     if (params.id) {
       const loadThreadDetail = async () => {
-        const response = await fetchThreadDetail(params.id);
+        const response = await FetchMessagesList(params.id);
         setMessages(response);
       };
       loadThreadDetail();
