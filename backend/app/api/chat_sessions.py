@@ -117,7 +117,7 @@ async def create_chat_session(
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             response = await client.post(
-                f"{config.AGENT_URL}api/agent/",
+                f"{config.AGENT_URL}agent/",
                 json={"prompt": chat_session_request.prompt},
             )
             response.raise_for_status()

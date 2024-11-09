@@ -23,7 +23,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "")
 
 # LLM
-AGENT_URL = os.getenv("AGENT_URL", "http://agent:8100")
+AGENT_URL = os.getenv("AGENT_URL", "http://agent:8100/api/v1/")
 
 # Others
 ENV = os.getenv("ENV", "dev")

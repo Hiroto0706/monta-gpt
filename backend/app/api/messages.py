@@ -120,7 +120,7 @@ async def send_prompt(
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             response = await client.post(
-                f"{config.AGENT_URL}api/agent/",
+                f"{config.AGENT_URL}agent/",
                 json={
                     "prompt": message_create_request.prompt,
                     "conversation": formatted_conversation,
