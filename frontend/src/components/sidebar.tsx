@@ -1,7 +1,7 @@
 "use client";
 
 import { FetchThreadList } from "@/api/threads";
-import { useSidebar } from "@/hook/sidebar";
+import { useSidebar } from "@/hooks/useSidebar";
 import { logout } from "@/lib/utils";
 import { Thread } from "@/types/threads";
 import Image from "next/image";

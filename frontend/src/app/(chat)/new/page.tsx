@@ -3,7 +3,7 @@
 import { CreateThread } from "@/api/threads";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
-import { useSidebar } from "@/hook/sidebar";
+import { useSidebar } from "@/hooks/useSidebar";
 import {
   CreateAgentMessage,
   CreateErrorMessage,

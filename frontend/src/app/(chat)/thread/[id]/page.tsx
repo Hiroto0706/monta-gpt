@@ -3,7 +3,7 @@
 import { ContinueConversation, FetchMessagesList } from "@/api/messages";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
-import { useSidebar } from "@/hook/sidebar";
+import { useSidebar } from "@/hooks/useSidebar";
 import {
   CreateErrorMessage,
   CreateGeneratingMessage,
