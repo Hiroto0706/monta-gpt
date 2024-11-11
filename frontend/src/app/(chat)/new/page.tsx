@@ -1,17 +1,15 @@
 "use client";
 
-import { CreateThread } from "@/api/threads";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import {
-  CreateAgentMessage,
   CreateErrorMessage,
   CreateGeneratingMessage,
   CreateUserMessage,
 } from "@/lib/utils";
 import { Message } from "@/types/messages";
-import { Thread } from "@/types/threads";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,46 +19,48 @@ export default function NewThreadPage() {
   const [chatStarted, setChatStarted] = useState(false);
   const { isOpen } = useSidebar();
 
-  /*
-    handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
-  */
+  /**
+   * handleWebSocketMessage はWebサーバから受け取ったメッセージを処理する関数
+   * @param data
+   */
+  const handleWebSocketMessage = (newMessage: Message) => {
+    setMessages((prevMessages) => {
+      const updatedMessages = [...prevMessages];
+      updatedMessages.pop();
+      return [...updatedMessages, newMessage];
+    });
+
+    if (newMessage.session_id !== 0) {
+      router.push(`/thread/${newMessage.id}`);
+    }
+  };
+
+  const baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions";
+  const { sendMessage, isConnected } = useWebSocket(
+    baseUrl,
+    handleWebSocketMessage
+  );
+
+  /**
+   * handleSubmit はユーザーからの質問を受け取りAIの回答を生成し、新しいスレッドを作成する関数
+   * @param value {string} ユーザーからのプロンプト
+   */
   const handleSubmit = async (value: string) => {
-    // Add user's message to messages
     const userMessage = CreateUserMessage(value);
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    // Add 'generating...' message
     const generatingMessage = CreateGeneratingMessage();
     setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
-    // Set chatStarted to true to display ChatHistoryComponent
     setChatStarted(true);
 
-    try {
-      const response = await CreateThread(value);
-      // Assume the API returns the assistant's message
-      const newThread: Thread = response;
-      let assistantMessage: Message;
-      if (newThread.content !== undefined) {
-        assistantMessage = CreateAgentMessage(newThread?.content, newThread.id);
-      }
-
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages.pop(); // Remove 'generating...' message
-        return [...updatedMessages, assistantMessage];
-      });
-
-      router.push(`/thread/${newThread.id}`);
-    } catch (error) {
-      console.error(error);
-      // Handle error by removing 'generating...' message and adding error message
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages.pop(); // Remove 'generating...' message
-        const errorMessage = CreateErrorMessage();
-        return [...updatedMessages, errorMessage];
-      });
+    // WebSocket経由でスレッド作成リクエストを送信
+    if (isConnected) {
+      sendMessage(value, 0); // スレッド新規作成時はthread_idは存在しないので0
+    } else {
+      console.error("WebSocket is not connected");
+      const errorMessage = CreateErrorMessage();
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
   };
 

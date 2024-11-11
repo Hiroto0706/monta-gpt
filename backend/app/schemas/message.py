@@ -33,7 +33,6 @@ class MessageResponse(MessageBase):
     id: int
     session_id: int
     content: str
-    is_user: bool
     created_at: datetime
     updated_at: datetime
 

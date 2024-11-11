@@ -1,9 +1,10 @@
 "use client";
 
-import { ContinueConversation, FetchMessagesList } from "@/api/messages";
+import { FetchMessagesList } from "@/api/messages";
 import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   CreateErrorMessage,
   CreateGeneratingMessage,
@@ -17,9 +18,25 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isOpen } = useSidebar();
 
-  /*
-    handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
-  */
+  /**
+   * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
+   * @param message {string} WebSocketサーバから受け取ったテキスト
+   */
+  const handleWebSocketMessage = (message: Message) => {
+    setMessages((prevMessages) => [...prevMessages, message]);
+  };
+
+  const baseUrl: string =
+    process.env.NEXT_PUBLIC_BASE_URL_WS + "messages/conversation";
+  const { sendMessage, isConnected } = useWebSocket(
+    baseUrl,
+    handleWebSocketMessage
+  );
+
+  /**
+   * handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
+   * @param value {string} ユーザーからのプロンプト
+   */
   const handleSubmit = async (value: string) => {
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,30 +46,25 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
     const userMessage = CreateUserMessage(value);
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    // "generating..." メッセージを追加
     const generatingMessage = CreateGeneratingMessage();
     setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
-    // 画面を一番下にスクロール
-    scrollToBottom();
-
-    try {
-      const threadID = params.id;
-      const response = await ContinueConversation(threadID, value);
-
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages.pop(); // "generating..." メッセージを削除
-        return [...updatedMessages, response];
-      });
-    } catch (error) {
-      console.error(error);
-      // エラーメッセージを会話に追加
-      const errorMessage = CreateErrorMessage();
+    const threadID = params.id;
+    if (isConnected) {
+      sendMessage(value, threadID);
+    } else {
+      const errorText = "WebSocket is not connected";
+      console.error(errorText);
+      const errorMessage = CreateErrorMessage(errorText);
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
+
+    scrollToBottom();
   };
 
+  /**
+   * 初回レンダリング時に会話履歴を取得する
+   */
   useEffect(() => {
     if (params.id) {
       const loadThreadDetail = async () => {
