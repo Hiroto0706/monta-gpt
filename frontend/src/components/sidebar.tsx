@@ -89,7 +89,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
                       <Link
                         key={thread.id}
                         href={`/thread/${thread.id}`}
-                        className={`block px-2 py-1 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis text-xs ${
+                        className={`block p-2 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis text-xs ${
                           isActive ? "bg-gray-300" : ""
                         }`}
                         onClick={() => handleLinkClick()}
