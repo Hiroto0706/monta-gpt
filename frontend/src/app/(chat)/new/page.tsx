@@ -60,7 +60,11 @@ export default function NewThreadPage() {
     } else {
       console.error("WebSocket is not connected");
       const errorMessage = CreateErrorMessage();
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages.pop();
+        return [...updatedMessages, errorMessage];
+      });
     }
   };
 

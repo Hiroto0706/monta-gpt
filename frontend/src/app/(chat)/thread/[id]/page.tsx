@@ -23,7 +23,11 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    * @param message {string} WebSocketサーバから受け取ったテキスト
    */
   const handleWebSocketMessage = (message: Message) => {
-    setMessages((prevMessages) => [...prevMessages, message]);
+    setMessages((prevMessages) => {
+      const updatedMessages = [...prevMessages];
+      updatedMessages.pop();
+      return [...updatedMessages, message];
+    });
   };
 
   const baseUrl: string =
@@ -56,7 +60,11 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
       const errorText = "WebSocket is not connected";
       console.error(errorText);
       const errorMessage = CreateErrorMessage(errorText);
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages.pop();
+        return [...updatedMessages, errorMessage];
+      });
     }
 
     scrollToBottom();
