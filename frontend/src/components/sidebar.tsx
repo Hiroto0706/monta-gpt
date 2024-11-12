@@ -16,9 +16,16 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const { isOpen, toggleSidebar } = useSidebar();
 
-  const handleLinkClick = () => {
+  /**
+   * handleLinkClick はリンクをクリックしたときの処理を行う関数
+   * @param target {string} 遷移先URL
+   */
+  const handleLinkClick = (target: string) => {
     if (window.innerWidth < 768) {
       toggleSidebar();
+    }
+    if (window.location.pathname === target) {
+      window.location.reload();
     }
   };
 
@@ -66,14 +73,14 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
               <Link
                 href="/new"
                 className="text-2xl my-4 flex justify-center hover:opacity-70 duration-300"
-                onClick={() => handleLinkClick()}
+                onClick={() => handleLinkClick("/new")}
               >
                 もんたGPT
               </Link>
               <Link
                 className="mb-2 px-2 py-1 w-full bg-white border rounded-xl border-gray-300 text-sm block shadow hover:bg-gray-100 duration-300"
                 href="/new"
-                onClick={() => handleLinkClick()}
+                onClick={() => handleLinkClick("/new")}
               >
                 New chat
               </Link>
@@ -92,7 +99,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
                         className={`block p-2 mb-1 rounded cursor-pointer hover:bg-gray-300 duration-300 overflow-hidden whitespace-nowrap text-ellipsis text-xs ${
                           isActive ? "bg-gray-300" : ""
                         }`}
-                        onClick={() => handleLinkClick()}
+                        onClick={() => handleLinkClick(`/thread/${thread.id}`)}
                       >
                         {thread.summary}
                       </Link>
