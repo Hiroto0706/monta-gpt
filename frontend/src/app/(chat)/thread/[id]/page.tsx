@@ -5,11 +5,7 @@ import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import {
-  CreateErrorMessage,
-  CreateGeneratingMessage,
-  CreateUserMessage,
-} from "@/lib/utils";
+import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -20,17 +16,30 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
 
   /**
    * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
-   * @param message {string} WebSocketサーバから受け取ったテキスト
+   * @param newContent {Message} WebSocketサーバから受け取ったメッセージ
    */
-  const handleWebSocketMessage = useCallback((message: Message) => {
+  const handleWebSocketMessage = useCallback((newContent: Message) => {
     setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages.slice(0, -1), message];
+      const updatedMessages = [...prevMessages];
+      for (let i = updatedMessages.length - 1; i >= 0; i--) {
+        if (!updatedMessages[i].is_user) {
+          const existingContent = updatedMessages[i].content ?? "";
+          updatedMessages[i] = {
+            ...updatedMessages[i],
+            content: existingContent + newContent.content,
+            is_generating: false,
+          };
+          break;
+        }
+      }
       return updatedMessages;
     });
   }, []);
+
   const baseUrl = useMemo(() => {
     return `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation?session_id=${params.id}`;
   }, [params.id]);
+
   const { sendMessage, isConnected } = useWebSocket(
     baseUrl,
     handleWebSocketMessage
@@ -41,31 +50,17 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    * @param value {string} ユーザーからのプロンプト
    */
   const handleSubmit = async (value: string) => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+    if (!isConnected) {
+      // FIXME: idはwebsocket通信よりidが帰ってきたらmessagesに追加するようにする
+      const userMessage = CreateUserMessage(value);
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    // FIXME: idはwebsocket通信よりidが帰ってきたらmessagesに追加するようにする
-    const userMessage = CreateUserMessage(value);
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+      const generatingMessage = CreateGeneratingMessage();
+      setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
-    const generatingMessage = CreateGeneratingMessage();
-    setMessages((prevMessages) => [...prevMessages, generatingMessage]);
-
-    const threadID = params.id;
-    if (isConnected) {
+      const threadID = params.id;
       sendMessage(value, threadID);
-    } else {
-      const errorText = "WebSocket is not connected";
-      console.error(errorText);
-      const errorMessage = CreateErrorMessage(errorText);
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages.slice(0, -1), errorMessage];
-        return updatedMessages;
-      });
     }
-
-    scrollToBottom();
   };
 
   /**
@@ -93,7 +88,10 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
           !isOpen ? "" : "md:left-[calc(50%+6rem)]"
         }`}
       >
-        <ChatBoxComponent handleSubmit={handleSubmit} />
+        <ChatBoxComponent
+          handleSubmit={handleSubmit}
+          isConnected={isConnected}
+        />
       </div>
     </>
   );

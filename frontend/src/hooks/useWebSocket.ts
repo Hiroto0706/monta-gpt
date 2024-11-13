@@ -14,7 +14,12 @@ export const useWebSocket = (
   const socketRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
+  /**
+   * connectWebSocket はWebSocketの接続を開始する関数
+   */
+  const connectWebSocket = () => {
+    if (socketRef.current) return;
+
     const socket = new WebSocket(url);
     socketRef.current = socket;
 
@@ -50,27 +55,37 @@ export const useWebSocket = (
     socket.onclose = () => {
       console.log("Disconnected from WebSocket server");
       setIsConnected(false);
+      socketRef.current = null;
     };
+  };
 
+  useEffect(() => {
     return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        socketRef.current.close();
       }
     };
-  }, [url, onMessage]);
+  }, [url]);
 
   /**
    * sendMessage はWebサーバにmessageを送信する関数です
    * @param message {string} Webサーバに送信するメッセージ
    */
   const sendMessage = (message: string, threadID: number = 0) => {
+    if (!socketRef.current) {
+      // sendMessageが初めて呼ばれたときにWebSocketを接続
+      connectWebSocket();
+    }
+
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
         JSON.stringify({ message: message, thread_id: threadID })
       );
-    } else {
-      console.error("WebSocket is not connected");
     }
   };
+
   return { sendMessage, isConnected };
 };

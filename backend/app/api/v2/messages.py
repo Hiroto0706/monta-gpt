@@ -24,11 +24,11 @@ async def websocket_conversation(
     await websocket.accept()
 
     try:
-        for i in range(10):  # 10秒間のループ
+        for i in range(100):  # 10秒間のループ
             # 固定のメッセージを作成
             fixed_message = {
                 "session_id": session_id,
-                "content": f"test:{i}\n",
+                "content": f"test:{i+1}\n",
                 "created_at": datetime.utcnow().isoformat(),
             }
 
@@ -36,7 +36,7 @@ async def websocket_conversation(
             await websocket.send_json(fixed_message)
 
             # 1秒間隔でメッセージを送信
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for session {session_id}")
