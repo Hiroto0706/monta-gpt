@@ -1,4 +1,4 @@
-import { CreateErrorMessage, CreateUserMessage } from "@/lib/utils";
+import { CreateAgentMessage, CreateErrorMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
 
@@ -29,7 +29,7 @@ export const useWebSocket = (
         const data = JSON.parse(event.data);
 
         if ("session_id" in data && "content" in data) {
-          const newMessage = CreateUserMessage(data.content, data.session_id);
+          const newMessage = CreateAgentMessage(data.content, data.session_id);
           onMessage(newMessage);
         } else {
           const errorMessage = CreateErrorMessage();
@@ -53,7 +53,9 @@ export const useWebSocket = (
     };
 
     return () => {
-      socket.close();
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
     };
   }, [url, onMessage]);
 

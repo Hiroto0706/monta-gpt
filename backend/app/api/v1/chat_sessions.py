@@ -17,7 +17,7 @@ from schemas.chat_session import (
 )
 import utilities.config as config
 
-router = APIRouter(prefix="/chat_sessions", tags=["chat_sessions"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

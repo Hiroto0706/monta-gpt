@@ -25,9 +25,8 @@ export default function NewThreadPage() {
    */
   const handleWebSocketMessage = (newMessage: Message) => {
     setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages];
-      updatedMessages.pop();
-      return [...updatedMessages, newMessage];
+      const updatedMessages = [...prevMessages.slice(0, -1), newMessage];
+      return updatedMessages;
     });
 
     if (newMessage.session_id !== 0) {
@@ -61,9 +60,8 @@ export default function NewThreadPage() {
       console.error("WebSocket is not connected");
       const errorMessage = CreateErrorMessage();
       setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages.pop();
-        return [...updatedMessages, errorMessage];
+        const updatedMessages = [...prevMessages.slice(0, -1), errorMessage];
+        return updatedMessages;
       });
     }
   };

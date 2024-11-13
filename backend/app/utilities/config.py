@@ -28,4 +28,4 @@ AGENT_URL = os.getenv("AGENT_URL", "http://agent:8100/api/v1/")
 # Others
 ENV = os.getenv("ENV", "dev")
 DEFAULT_SESSION_EXPIRATION_DAY = os.getenv("DEFAULT_SESSION_EXPIRATION_DAY", 7)
-ALLOW_ORIGIN = os.getenv("ALLOW_ORIGIN", "http://localhost:3000")
+ALLOW_ORIGIN = os.getenv("ALLOW_ORIGIN").split(",")

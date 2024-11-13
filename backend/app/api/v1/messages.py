@@ -11,7 +11,7 @@ from db.models.message import Message
 from schemas.message import MessageCreateRequest, MessageResponse
 import utilities.config as config
 
-router = APIRouter(prefix="/messages", tags=["messages"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

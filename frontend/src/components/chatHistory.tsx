@@ -45,7 +45,7 @@ const ChatHistoryComponent: React.FC<Props> = ({
             <>
               {messages.map((message, index) => (
                 <div
-                  key={message.id}
+                  key={index}
                   className={`p-4 max-w-2xl mx-auto text-left break-words ${
                     message.is_user
                       ? `${adjustFontSize(message.content)} mt-4`

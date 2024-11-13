@@ -11,7 +11,7 @@ import {
   CreateUserMessage,
 } from "@/lib/utils";
 import { Message } from "@/types/messages";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,16 +22,15 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
    * @param message {string} WebSocketサーバから受け取ったテキスト
    */
-  const handleWebSocketMessage = (message: Message) => {
+  const handleWebSocketMessage = useCallback((message: Message) => {
     setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages];
-      updatedMessages.pop();
-      return [...updatedMessages, message];
+      const updatedMessages = [...prevMessages.slice(0, -1), message];
+      return updatedMessages;
     });
-  };
-
-  const baseUrl: string =
-    process.env.NEXT_PUBLIC_BASE_URL_WS + "messages/conversation";
+  }, []);
+  const baseUrl = useMemo(() => {
+    return `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation?session_id=${params.id}`;
+  }, [params.id]);
   const { sendMessage, isConnected } = useWebSocket(
     baseUrl,
     handleWebSocketMessage
@@ -61,9 +60,8 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
       console.error(errorText);
       const errorMessage = CreateErrorMessage(errorText);
       setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages.pop();
-        return [...updatedMessages, errorMessage];
+        const updatedMessages = [...prevMessages.slice(0, -1), errorMessage];
+        return updatedMessages;
       });
     }
 

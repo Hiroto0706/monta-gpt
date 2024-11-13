@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 import utilities.config as config
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
