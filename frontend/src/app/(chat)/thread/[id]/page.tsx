@@ -7,18 +7,20 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isOpen } = useSidebar();
+  const router = useRouter();
 
   /**
    * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
    * @param newContent {Message} WebSocketサーバから受け取ったメッセージ
    */
-  const handleWebSocketMessage = useCallback((newContent: Message) => {
+  const handleWebSocketMessage = useCallback((newMessage: Message) => {
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages];
       for (let i = updatedMessages.length - 1; i >= 0; i--) {
@@ -26,7 +28,7 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
           const existingContent = updatedMessages[i].content ?? "";
           updatedMessages[i] = {
             ...updatedMessages[i],
-            content: existingContent + newContent.content,
+            content: existingContent + newMessage.content,
             is_generating: false,
           };
           break;
@@ -70,7 +72,12 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
     if (params.id) {
       const loadThreadDetail = async () => {
         const response = await FetchMessagesList(params.id);
-        setMessages(response);
+
+        if (response.length > 0) {
+          setMessages(response);
+        } else {
+          router.push("/new");
+        }
       };
       loadThreadDetail();
     }

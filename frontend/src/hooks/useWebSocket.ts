@@ -8,7 +8,7 @@ export const useWebSocket = (
   url: string,
   onMessage: MessageHandler
 ): {
-  sendMessage: (message: string, threadID: number) => void;
+  sendMessage: (message: string, threadID?: number) => void;
   isConnected: boolean;
 } => {
   const socketRef = useRef<WebSocket | null>(null);
@@ -73,6 +73,7 @@ export const useWebSocket = (
   /**
    * sendMessage はWebサーバにmessageを送信する関数です
    * @param message {string} Webサーバに送信するメッセージ
+   * @param threadID {number} ThreadID (optional)
    */
   const sendMessage = (message: string, threadID: number = 0) => {
     if (!socketRef.current) {

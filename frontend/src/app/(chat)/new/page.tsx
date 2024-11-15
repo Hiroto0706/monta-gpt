@@ -4,37 +4,47 @@ import ChatBoxComponent from "@/components/chatBox";
 import ChatHistoryComponent from "@/components/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import {
-  CreateErrorMessage,
-  CreateGeneratingMessage,
-  CreateUserMessage,
-} from "@/lib/utils";
+import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function NewThreadPage() {
-  const router = useRouter();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
   const { isOpen } = useSidebar();
 
   /**
    * handleWebSocketMessage はWebサーバから受け取ったメッセージを処理する関数
-   * @param data
+   * @param newMessage
    */
-  const handleWebSocketMessage = (newMessage: Message) => {
+  const handleWebSocketMessage = useCallback((newMessage: Message) => {
+    if (newMessage.session_id !== 0) {
+      window.history.pushState(null, "", `/thread/${newMessage.session_id}`);
+    }
+
     setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages.slice(0, -1), newMessage];
+      const updatedMessages = [...prevMessages];
+      for (let i = updatedMessages.length - 1; i >= 0; i--) {
+        if (!updatedMessages[i].is_user) {
+          const existingContent = updatedMessages[i].content ?? "";
+          updatedMessages[i] = {
+            ...updatedMessages[i],
+            content: existingContent + newMessage.content,
+            is_generating: false,
+          };
+          break;
+        }
+      }
       return updatedMessages;
     });
+  }, []);
 
-    if (newMessage.session_id !== 0) {
-      router.push(`/thread/${newMessage.id}`);
-    }
-  };
+  const baseUrl = useMemo(() => {
+    return process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/";
+  }, []);
 
-  const baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions";
   const { sendMessage, isConnected } = useWebSocket(
     baseUrl,
     handleWebSocketMessage
@@ -45,45 +55,60 @@ export default function NewThreadPage() {
    * @param value {string} ユーザーからのプロンプト
    */
   const handleSubmit = async (value: string) => {
-    const userMessage = CreateUserMessage(value);
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    if (!isConnected) {
+      const userMessage = CreateUserMessage(value);
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    const generatingMessage = CreateGeneratingMessage();
-    setMessages((prevMessages) => [...prevMessages, generatingMessage]);
+      const generatingMessage = CreateGeneratingMessage();
+      setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
-    setChatStarted(true);
+      setChatStarted(true);
 
-    // WebSocket経由でスレッド作成リクエストを送信
-    if (isConnected) {
-      sendMessage(value, 0); // スレッド新規作成時はthread_idは存在しないので0
-    } else {
-      console.error("WebSocket is not connected");
-      const errorMessage = CreateErrorMessage();
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages.slice(0, -1), errorMessage];
-        return updatedMessages;
-      });
+      sendMessage(value);
     }
   };
+
+  // FIXME: これはカスタムフックしたい
+  /**
+   * scrollToBottom は一番下部に要素をスクロールする関数
+   */
+  const scrollToBottom = (): void => {
+    if (messagesEndRef != undefined) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length]);
 
   return (
     <>
       {chatStarted ? (
         <>
-          <ChatHistoryComponent messages={messages} />
+          <ChatHistoryComponent
+            messages={messages}
+            messagesEndRef={messagesEndRef}
+          />
           <div
             className={`fixed bottom-0 w-full max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
               !isOpen ? "" : "md:left-[calc(50%+6rem)]"
             }`}
           >
-            <ChatBoxComponent handleSubmit={handleSubmit} />
+            <ChatBoxComponent
+              handleSubmit={handleSubmit}
+              isConnected={isConnected}
+            />
           </div>
         </>
       ) : (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center w-full max-w-[640px] mx-4">
             <p className="text-2xl font-bold mb-8">なんでも聞いてや〜</p>
-            <ChatBoxComponent handleSubmit={handleSubmit} />
+            <ChatBoxComponent
+              handleSubmit={handleSubmit}
+              isConnected={isConnected}
+            />
           </div>
         </div>
       )}

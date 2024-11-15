@@ -7,26 +7,27 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.websocket("/conversation")
-async def websocket_conversation(
+@router.websocket("/")
+async def websocket_create_chat_session(
     websocket: WebSocket,
-    session_id: int = 0,
 ):
     """
     WebSocketで10秒間、1秒ごとに固定メッセージを送信し、その後通信を切断するエンドポイント。
 
     Args:
         websocket (WebSocket): WebSocket接続オブジェクト
-        session_id (int): ユーザーのセッションID
     """
     await websocket.accept()
+
+    # TODO: chat_sessionを作成する処理
+    session_id = 9999
 
     try:
         for i in range(100):  # 10秒間のループ
             # 固定のメッセージを作成
             fixed_message = {
                 "session_id": session_id,
-                "content": f"{i+1}:this is a test text by thread_id = {session_id}.\n",
+                "content": f"test:{i+1}\n",
                 "created_at": datetime.utcnow().isoformat(),
             }
 
