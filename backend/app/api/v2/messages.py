@@ -3,6 +3,8 @@ import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from datetime import datetime
 
+from utilities.access_token import verify_access_token
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -10,6 +12,7 @@ logger = logging.getLogger(__name__)
 @router.websocket("/conversation")
 async def websocket_conversation(
     websocket: WebSocket,
+    access_token: str,
     session_id: int = 0,
 ):
     """
@@ -19,6 +22,7 @@ async def websocket_conversation(
         websocket (WebSocket): WebSocket接続オブジェクト
         session_id (int): ユーザーのセッションID
     """
+    verify_access_token(access_token)
     await websocket.accept()
 
     try:
@@ -26,7 +30,7 @@ async def websocket_conversation(
             # 固定のメッセージを作成
             fixed_message = {
                 "session_id": session_id,
-                "content": f"{i+1}:this is a test text by thread_id = {session_id}.\n",
+                "content": f"test:{i+1}.\nsession_id:{session_id}\n",
                 "created_at": datetime.utcnow().isoformat(),
             }
 
@@ -34,7 +38,7 @@ async def websocket_conversation(
             await websocket.send_json(fixed_message)
 
             # 1秒間隔でメッセージを送信
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.025)
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for session {session_id}")

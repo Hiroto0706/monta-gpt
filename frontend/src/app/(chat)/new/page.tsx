@@ -50,7 +50,7 @@ export default function NewThreadPage() {
   }, []);
 
   const baseUrl = useMemo(() => {
-    return process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/";
+    return process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/create";
   }, []);
 
   const { sendMessage, isConnected } = useWebSocket(

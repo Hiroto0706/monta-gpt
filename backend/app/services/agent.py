@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 import utilities.config as config
 
-router = APIRouter(prefix="/agent", tags=["agents"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

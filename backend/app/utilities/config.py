@@ -24,6 +24,7 @@ ALGORITHM = os.getenv("ALGORITHM", "")
 
 # LLM
 AGENT_URL = os.getenv("AGENT_URL", "http://agent:8100/api/v1/")
+OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 
 # Others
 ENV = os.getenv("ENV", "dev")

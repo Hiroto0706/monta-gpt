@@ -6,13 +6,37 @@ type MessageHandler = (message: Message) => void;
 
 export const useWebSocket = (
   url: string,
-  onMessage: MessageHandler
+  onMessage: MessageHandler,
+  query: Record<string, string | number | boolean> = {}
 ): {
   sendMessage: (message: string, threadID?: number) => void;
   isConnected: boolean;
 } => {
   const socketRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const accessTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // クッキーを解析してaccess_tokenを取得
+    const cookies = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("access_token="));
+    if (cookies) {
+      accessTokenRef.current = cookies.split("=")[1];
+    }
+  }, []);
+
+  /**
+   * クエリオブジェクトをクエリ文字列に変換するユーティリティ関数
+   * @param query {Record<string, string | number | boolean>} クエリパラメータのオブジェクト
+   * @returns {string} クエリ文字列
+   */
+  const buildQueryString = (
+    query: Record<string, string | number | boolean>
+  ): string => {
+    const params = new URLSearchParams(query as Record<string, string>);
+    return params.toString();
+  };
 
   /**
    * connectWebSocket はWebSocketの接続を開始する関数
@@ -20,11 +44,18 @@ export const useWebSocket = (
   const connectWebSocket = () => {
     if (socketRef.current) return;
 
-    const socket = new WebSocket(url);
+    const accessToken = accessTokenRef.current;
+    if (accessToken) {
+      query["access_token"] = accessToken;
+    }
+
+    const queryString = buildQueryString(query);
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+
+    const socket = new WebSocket(fullUrl);
     socketRef.current = socket;
 
     socket.onopen = () => {
-      console.log("Connected to WebSocket server");
       setIsConnected(true);
     };
 
@@ -53,7 +84,6 @@ export const useWebSocket = (
     };
 
     socket.onclose = () => {
-      console.log("Disconnected from WebSocket server");
       setIsConnected(false);
       socketRef.current = null;
     };

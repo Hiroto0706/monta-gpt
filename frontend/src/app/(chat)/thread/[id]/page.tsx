@@ -39,12 +39,13 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
   }, []);
 
   const baseUrl = useMemo(() => {
-    return `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation?session_id=${params.id}`;
+    return `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation`;
   }, [params.id]);
 
   const { sendMessage, isConnected } = useWebSocket(
     baseUrl,
-    handleWebSocketMessage
+    handleWebSocketMessage,
+    { session_id: params.id }
   );
 
   /**

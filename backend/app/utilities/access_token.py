@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
+import logging
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
 import utilities.config as config
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+logger = logging.getLogger(__name__)
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
