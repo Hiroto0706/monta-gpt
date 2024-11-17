@@ -15,6 +15,20 @@ interface Props {
 const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const { isOpen, toggleSidebar } = useSidebar();
+  const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
+
+  /**
+   * ブレークポイントの変更時にアニメーションを無効化する
+   */
+  useEffect(() => {
+    const handleResize = () => {
+      setIsTransitionEnabled(false);
+      setTimeout(() => setIsTransitionEnabled(true), 100);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /**
    * handleLinkClick はリンクをクリックしたときの処理を行う関数
@@ -49,8 +63,12 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
 
       {/* サイドバー本体 */}
       <div
-        className={`h-screen fixed z-20 border-r transition-all duration-300 overflow-hidden bg-gray-200 ${
-          isOpen ? "w-52" : "w-0 border-r-0"
+        className={`h-screen fixed z-20 border-r bg-gray-200 overflow-hidden ${
+          isTransitionEnabled ? "transition-all duration-300" : ""
+        } ${
+          isOpen
+            ? "w-52 translate-x-0"
+            : "md:w-0 w-52 md:translate-x-0 translate-x-[-100%]"
         }`}
       >
         <div className="h-screen w-52">
