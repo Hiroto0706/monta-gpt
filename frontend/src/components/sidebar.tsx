@@ -6,6 +6,7 @@ import { logout } from "@/lib/utils";
 import { Thread } from "@/types/threads";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 interface Props {
@@ -16,6 +17,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const { isOpen, toggleSidebar } = useSidebar();
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
+  const router = useRouter();
 
   /**
    * ブレークポイントの変更時にアニメーションを無効化する
@@ -38,8 +40,11 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
     if (window.innerWidth < 768) {
       toggleSidebar();
     }
-    if (window.location.pathname === target) {
-      window.location.reload();
+
+    if (target === "/new") {
+      window.location.href = target;
+    } else {
+      router.push(target);
     }
   };
 

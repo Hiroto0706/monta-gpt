@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function NewThreadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasNavigatedRef = useRef(false); // URL画面遷移済みかどうかを管理する
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
   const { isOpen } = useSidebar();
@@ -20,8 +21,15 @@ export default function NewThreadPage() {
    * @param newMessage
    */
   const handleWebSocketMessage = useCallback((newMessage: Message) => {
-    if (newMessage.session_id !== 0) {
-      window.history.pushState(null, "", `/thread/${newMessage.session_id}`);
+    const newUrl = `/thread/${newMessage.session_id}`;
+
+    if (
+      !hasNavigatedRef.current &&
+      newMessage.session_id !== 0 &&
+      window.location.pathname !== newUrl
+    ) {
+      window.history.pushState(null, "", newUrl);
+      hasNavigatedRef.current = true;
     }
 
     setMessages((prevMessages) => {
