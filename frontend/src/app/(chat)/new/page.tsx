@@ -68,8 +68,6 @@ export default function NewThreadPage() {
         ? process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/create"
         : process.env.NEXT_PUBLIC_BASE_URL_WS + "messages/conversation";
 
-      console.log(sessionIDRef.current);
-
       if (sessionIDRef.current !== null) {
         sendMessage(value, baseUrl, sessionIDRef.current);
       } else {
