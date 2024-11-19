@@ -1,9 +1,12 @@
+import asyncio
 import json
 import logging
-import asyncio
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status
-from datetime import datetime
 
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+
+import utilities.config as config
 from utilities.access_token import verify_access_token
 
 router = APIRouter()
@@ -21,6 +24,7 @@ async def websocket_conversation(
 
     Args:
         websocket (WebSocket): WebSocket接続オブジェクト
+        access_token (string): 認証用のトークン
         session_id (int): ユーザーのセッションID
     """
     verify_access_token(access_token)
@@ -39,19 +43,48 @@ async def websocket_conversation(
                 detail="Invalid message format. 'message' field is required.",
             )
 
-        for i in range(100):  # 10秒間のループ
-            # 固定のメッセージを作成
-            fixed_message = {
-                "session_id": session_id,
-                "content": f"conversation.\nsession_id:{session_id}\n",
-                "created_at": datetime.utcnow().isoformat(),
-            }
+        llm = ChatOpenAI(
+            temperature=0.7, streaming=True, openai_api_key=config.OPENAI_API_KEY
+        )
+        prompt = ChatPromptTemplate.from_template("User message: {message}")
+        chain = prompt | llm
 
-            # WebSocket経由でメッセージを送信
-            await websocket.send_json(fixed_message)
+        res = chain.astream({"message": message_content})
 
-            # 1秒間隔でメッセージを送信
-            await asyncio.sleep(0.025)
+        final_response = ""
+        accumulated_content = ""
+        chunk_size = 50
+
+        last_send_time = asyncio.get_event_loop().time()
+
+        async for chunk in res:
+            content = chunk.content if hasattr(chunk, "content") else str(chunk)
+            accumulated_content += content
+            final_response += content
+
+            current_time = asyncio.get_event_loop().time()
+            if (
+                len(accumulated_content) >= chunk_size
+                or (current_time - last_send_time) >= 1.0
+            ):
+                await websocket.send_json(
+                    {
+                        "session_id": session_id,
+                        "content": accumulated_content,
+                    }
+                )
+                accumulated_content = ""
+                last_send_time = current_time
+
+        if accumulated_content:
+            await websocket.send_json(
+                {
+                    "session_id": session_id,
+                    "content": accumulated_content,
+                }
+            )
+
+        logger.info(final_response)
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for session {session_id}")

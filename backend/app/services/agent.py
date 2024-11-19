@@ -8,7 +8,6 @@ import utilities.config as config
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 # FIXME: thread_idはAgent側で生成してもらい、それをもとに作成することにする

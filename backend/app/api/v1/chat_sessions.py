@@ -20,7 +20,6 @@ import utilities.config as config
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 # TODO: user_idごとにchat_sessionsを取得するように修正

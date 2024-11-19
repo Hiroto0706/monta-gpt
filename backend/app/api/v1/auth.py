@@ -17,7 +17,6 @@ import utilities.config as config
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 @router.get("/google/login")

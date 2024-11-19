@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -6,6 +7,8 @@ import utilities.config as config
 
 # 全てのモデルのインポート
 from db.models import *
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)

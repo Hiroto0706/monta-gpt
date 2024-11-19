@@ -23,7 +23,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "")
 
 # LLM
-OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Others
 ENV = os.getenv("ENV", "dev")
