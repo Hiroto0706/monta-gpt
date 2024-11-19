@@ -5,11 +5,10 @@ import { useEffect, useRef, useState } from "react";
 type MessageHandler = (message: Message) => void;
 
 export const useWebSocket = (
-  url: string,
   onMessage: MessageHandler,
   query: Record<string, string | number | boolean> = {}
 ): {
-  sendMessage: (message: string, threadID?: number) => void;
+  sendMessage: (message: string, url: string, threadID?: number) => void;
   isConnected: boolean;
 } => {
   const socketRef = useRef<WebSocket | null>(null);
@@ -41,7 +40,7 @@ export const useWebSocket = (
   /**
    * connectWebSocket はWebSocketの接続を開始する関数
    */
-  const connectWebSocket = () => {
+  const connectWebSocket = async (url: string): Promise<void> => {
     if (socketRef.current) return;
 
     const accessToken = accessTokenRef.current;
@@ -98,23 +97,45 @@ export const useWebSocket = (
         socketRef.current.close();
       }
     };
-  }, [url]);
+  }, []);
 
   /**
-   * sendMessage はWebサーバにmessageを送信する関数です
+   * WebSocketを用いてサーバーにメッセージを送信する関数
    * @param message {string} Webサーバに送信するメッセージ
    * @param threadID {number} ThreadID (optional)
    */
-  const sendMessage = (message: string, threadID: number = 0) => {
-    if (!socketRef.current) {
-      // sendMessageが初めて呼ばれたときにWebSocketを接続
-      connectWebSocket();
+  const sendMessage = async (
+    message: string,
+    url: string,
+    threadID: number = 0
+  ) => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      await connectWebSocket(url);
     }
 
+    const waitForConnection = (): Promise<void> => {
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (
+            socketRef.current &&
+            socketRef.current.readyState === WebSocket.OPEN
+          ) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 100); // 100msごとに確認
+      });
+    };
+
+    await waitForConnection();
+
+    // WebSocketが接続されている場合にメッセージを送信
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
-        JSON.stringify({ message: message, thread_id: threadID })
+        JSON.stringify({ message: message, session_id: threadID })
       );
+    } else {
+      console.error("WebSocket is not open. Failed to send message.");
     }
   };
 

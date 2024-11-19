@@ -58,6 +58,8 @@ async def get_messages_by_session_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}",
         )
+    except HTTPException as http_exe:
+        raise http_exe
     except Exception as e:
         logger.error(
             f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}"

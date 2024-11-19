@@ -21,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 
 @router.get("/google/login")
-async def google_auth_login():
+async def google_auth_login() -> Dict[str, str]:
     """
     Google認証用のURLを生成します。
 
@@ -60,33 +60,24 @@ async def google_auth_callback(
     Raises:
         HTTPException: 認証プロセス中にエラーが発生した場合
     """
-    token_url: str = "https://oauth2.googleapis.com/token"
-    token_data: Dict[str, str] = {
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
         "code": code,
         "client_id": config.GOOGLE_CLIENT_ID,
         "client_secret": config.GOOGLE_CLIENT_SECRET,
         "redirect_uri": config.GOOGLE_REDIRECT_URI,
         "grant_type": "authorization_code",
     }
-
     try:
-        token_response: requests.Response = requests.post(token_url, data=token_data)
+        token_response = requests.post(token_url, data=token_data)
         token_response.raise_for_status()
-        logger.info("Successfully fetched token from Google")
+        token_response_data = token_response.json()
+        logger.info("Successfully fetched and parsed token from Google")
     except requests.RequestException as e:
         logger.error(f"Failed to fetch token from Google: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Failed to fetch token from Google: {str(e)}"
-        )
-
-    try:
-        token_response_data: Dict[str, Any] = token_response.json()
-        logger.info(f"Token response data: {token_response_data}")
-    except Exception as e:
-        logger.error(f"Failed to parse token response: {str(e)}")
-        raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to parse token response: {str(e)}",
+            detail="Failed to fetch token from Google.",
         )
 
     if "error" in token_response_data:
@@ -106,7 +97,10 @@ async def google_auth_callback(
 
     try:
         id_info: Dict[str, Any] = id_token.verify_oauth2_token(
-            id_token_jwt, google_requests.Request(), config.GOOGLE_CLIENT_ID
+            id_token_jwt,
+            google_requests.Request(),
+            config.GOOGLE_CLIENT_ID,
+            clock_skew_in_seconds=5, # 5sの余裕を許容
         )
         logger.info(f"ID token verified successfully: {id_info}")
     except Exception as e:
@@ -123,7 +117,7 @@ async def google_auth_callback(
         )
 
     try:
-        user: User = get_or_create_user(db=db, username=name, email=email)
+        user = get_or_create_user(db=db, username=name, email=email)
         logger.info(f"User {user.email} retrieved or created successfully")
     except Exception as e:
         logger.error(f"Failed to retrieve or create user: {str(e)}")

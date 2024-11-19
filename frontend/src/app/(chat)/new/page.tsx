@@ -6,14 +6,14 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function NewThreadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasChatStartRef = useRef(false);
   const hasNavigatedRef = useRef(false); // URL画面遷移済みかどうかを管理する
+  const sessionIDRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [chatStarted, setChatStarted] = useState(false);
   const { isOpen } = useSidebar();
 
   /**
@@ -28,6 +28,7 @@ export default function NewThreadPage() {
       newMessage.session_id !== 0 &&
       window.location.pathname !== newUrl
     ) {
+      sessionIDRef.current = newMessage.session_id;
       window.history.pushState(null, "", newUrl);
       hasNavigatedRef.current = true;
     }
@@ -49,14 +50,7 @@ export default function NewThreadPage() {
     });
   }, []);
 
-  const baseUrl = useMemo(() => {
-    return process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/create";
-  }, []);
-
-  const { sendMessage, isConnected } = useWebSocket(
-    baseUrl,
-    handleWebSocketMessage
-  );
+  const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage);
 
   /**
    * handleSubmit はユーザーからの質問を受け取りAIの回答を生成し、新しいスレッドを作成する関数
@@ -70,9 +64,18 @@ export default function NewThreadPage() {
       const generatingMessage = CreateGeneratingMessage();
       setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
-      setChatStarted(true);
+      const baseUrl = !hasChatStartRef.current
+        ? process.env.NEXT_PUBLIC_BASE_URL_WS + "chat_sessions/create"
+        : process.env.NEXT_PUBLIC_BASE_URL_WS + "messages/conversation";
 
-      sendMessage(value);
+      console.log(sessionIDRef.current);
+
+      if (sessionIDRef.current !== null) {
+        sendMessage(value, baseUrl, sessionIDRef.current);
+      } else {
+        sendMessage(value, baseUrl);
+      }
+      hasChatStartRef.current = true;
     }
   };
 
@@ -92,7 +95,7 @@ export default function NewThreadPage() {
 
   return (
     <>
-      {chatStarted ? (
+      {hasChatStartRef.current ? (
         <>
           <ChatHistoryComponent
             messages={messages}

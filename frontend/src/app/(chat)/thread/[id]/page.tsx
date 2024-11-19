@@ -8,7 +8,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,15 +38,9 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
     });
   }, []);
 
-  const baseUrl = useMemo(() => {
-    return `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation`;
-  }, [params.id]);
-
-  const { sendMessage, isConnected } = useWebSocket(
-    baseUrl,
-    handleWebSocketMessage,
-    { session_id: params.id }
-  );
+  const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage, {
+    session_id: params.id,
+  });
 
   /**
    * handleSubmit はユーザーからの質問を受け取りAIの回答を生成する関数
@@ -62,7 +56,8 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
       setMessages((prevMessages) => [...prevMessages, generatingMessage]);
 
       const threadID = params.id;
-      sendMessage(value, threadID);
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL_WS}messages/conversation`;
+      sendMessage(value, baseUrl, threadID);
     }
   };
 
