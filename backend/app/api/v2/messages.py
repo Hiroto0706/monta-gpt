@@ -68,7 +68,7 @@ async def websocket_conversation(
         ]
 
         # Process LLM and stream the response
-        async for chunk in process_llm(message_content, context):
+        async for chunk in process_llm(message_content, session_id, db, context):
             await websocket.send_json(
                 {
                     "session_id": session_id,
@@ -86,8 +86,4 @@ async def websocket_conversation(
         )
 
     finally:
-        # 10秒経過後にWebSocketを切断
         await websocket.close()
-        logger.info(
-            f"WebSocket connection closed for session {session_id} after 10 seconds"
-        )
