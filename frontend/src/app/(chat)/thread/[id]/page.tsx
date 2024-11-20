@@ -85,10 +85,9 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
         messages={messages}
         messagesEndRef={messagesEndRef}
       />
-
       <div
-        className={`fixed bottom-0 w-full max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
-          !isOpen ? "" : "md:left-[calc(50%+6rem)]"
+        className={`fixed bottom-0 w-full max-w-[580px] lg:max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
+          !isOpen ? "" : "md:left-[calc(50%+6.5rem)]"
         }`}
       >
         <ChatBoxComponent
