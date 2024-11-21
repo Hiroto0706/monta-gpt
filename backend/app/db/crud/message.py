@@ -4,7 +4,6 @@ from db.models.message import Message
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 def get_messages_by_session_id(
     db: Session, session_id: int, skip: int = 0, limit: int = 100

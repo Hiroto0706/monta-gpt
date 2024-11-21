@@ -26,24 +26,43 @@ body {
   }
 }
 
-@keyframes loadingBar {
-  0%,
-  100% {
-    width: 20%;
+@keyframes loadingBar1 {
+  0% {
+    width: 0%;
   }
-  50% {
+  60% {
     width: 100%;
   }
 }
 
 .animate-loading-bar1 {
-  animation: loadingBar 5s infinite;
+  animation: loadingBar1 4s infinite;
+}
+
+/* bar2: 5sのうち、90%の時点で幅が100% */
+@keyframes loadingBar2 {
+  0% {
+    width: 0%;
+  }
+  80% {
+    width: 100%;
+  }
 }
 
 .animate-loading-bar2 {
-  animation: loadingBar 5.1s infinite;
+  animation: loadingBar2 4s infinite;
+}
+
+/* bar3: 5sのうち、100%の時点で幅が100% */
+@keyframes loadingBar3 {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 .animate-loading-bar3 {
-  animation: loadingBar 5.2s infinite;
+  animation: loadingBar3 4s infinite;
 }

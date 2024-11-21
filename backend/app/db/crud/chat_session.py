@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def get_chat_sessions_by_user_id(

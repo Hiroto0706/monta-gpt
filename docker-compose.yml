@@ -24,23 +24,8 @@ services:
     depends_on:
       - postgres
       - redis
-      - agent
     env_file:
       - ./backend/app/.env
-    networks:
-      - app-network
-
-  agent:
-    container_name: agent
-    build: ./agent
-    ports:
-      - "8100:8100"
-    volumes:
-      - ./agent/app:/app
-    depends_on:
-      - postgres
-    env_file:
-      - ./agent/app/.env
     networks:
       - app-network
 

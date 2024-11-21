@@ -23,9 +23,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "")
 
 # LLM
-AGENT_URL = os.getenv("AGENT_URL", "http://agent:8100")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Others
 ENV = os.getenv("ENV", "dev")
 DEFAULT_SESSION_EXPIRATION_DAY = os.getenv("DEFAULT_SESSION_EXPIRATION_DAY", 7)
-ALLOW_ORIGIN = os.getenv("ALLOW_ORIGIN", "http://localhost:3000")
+ALLOW_ORIGIN = os.getenv("ALLOW_ORIGIN").split(",")

@@ -1,10 +1,8 @@
 from fastapi import APIRouter
-from .chat_sessions import router as chat_sessions_router
-from .messages import router as messages_router
-from .auth import router as auth_router
+from .v1 import router as v1_router
+from .v2 import router as v2_router
 
 router = APIRouter()
 
-router.include_router(chat_sessions_router)
-router.include_router(messages_router)
-router.include_router(auth_router)
+router.include_router(v1_router, prefix="/v1")
+router.include_router(v2_router, prefix="/v2")

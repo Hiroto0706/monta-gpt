@@ -13,29 +13,27 @@ const ChatHistoryComponent: React.FC<Props> = ({
   messages,
   messagesEndRef,
 }) => {
-  {
-    /*
-    scrollToBottom は一番下部に要素をスクロールする関数
-    */
-  }
-  const scrollToBottom = () => {
+  /**
+   * scrollToBottom は一番下部に要素をスクロールする関数
+   */
+  const scrollToBottom = (): void => {
     if (messagesEndRef != undefined) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  {
-    /*
-    adjustFontSize はユーザーの質問の長さより文字のサイズを変化させる関数
-    */
-  }
-  const adjustFontSize = (content: string = "") => {
-    return content.length > 100 ? "" : "text-3xl";
+  /**
+   * adjustFontSize はユーザーの質問の長さより文字のサイズを変化させる関数
+   * @param content {string} textareaに入力されている内容
+   * @returns {string} contentが100文字以下の場合は"text-3xl"（大きいフォントサイズクラス）、100文字を超える場合は空文字（デフォルトフォントサイズクラス）を返す
+   */
+  const adjustFontSize = (content: string = ""): string => {
+    return content.length > 100 ? "" : "text-2xl";
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length]);
 
   return (
     <>
@@ -45,10 +43,10 @@ const ChatHistoryComponent: React.FC<Props> = ({
             <>
               {messages.map((message, index) => (
                 <div
-                  key={message.id}
-                  className={`p-4 max-w-2xl mx-auto text-left break-words ${
+                  key={index}
+                  className={`mt-4 p-4 max-w-2xl mx-auto text-left break-words ${
                     message.is_user
-                      ? `${adjustFontSize(message.content)} mt-4`
+                      ? `${adjustFontSize(message.content)} rounded-lg bg-gray-100 shadow`
                       : index === messages.length - 1
                       ? "pb-8"
                       : "pb-8 border-b border-gray-300"

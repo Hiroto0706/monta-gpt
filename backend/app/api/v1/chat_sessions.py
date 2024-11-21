@@ -17,10 +17,9 @@ from schemas.chat_session import (
 )
 import utilities.config as config
 
-router = APIRouter(prefix="/chat_sessions", tags=["chat_sessions"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 # TODO: user_idごとにchat_sessionsを取得するように修正
@@ -117,7 +116,7 @@ async def create_chat_session(
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             response = await client.post(
-                f"{config.AGENT_URL}api/agent/",
+                f"{config.AGENT_URL}agent/",
                 json={"prompt": chat_session_request.prompt},
             )
             response.raise_for_status()

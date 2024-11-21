@@ -5,7 +5,6 @@ from db.models.user import User
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def get_user(db: Session, user_id: int) -> Optional[User]:

@@ -2,11 +2,14 @@ import React, { useRef, useState } from "react";
 
 interface Props {
   handleSubmit: (value: string) => Promise<void>;
+  isConnected?: boolean;
 }
 
-const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
+const ChatBoxComponent: React.FC<Props> = ({
+  handleSubmit,
+  isConnected = false,
+}) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
 
   const handleInput = () => {
@@ -25,15 +28,12 @@ const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
 
     const value = textarea.value.trim();
     if (value) {
-      setIsSubmitting(true);
       textarea.value = "";
       textarea.style.height = "auto";
       try {
         await handleSubmit(value);
       } catch (error) {
         console.error("Error submitting message:", error);
-      } finally {
-        setIsSubmitting(false);
       }
     }
   };
@@ -42,7 +42,7 @@ const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
     if (
       event.key === "Enter" &&
       !event.shiftKey &&
-      !isSubmitting &&
+      !isConnected &&
       !isComposing
     ) {
       event.preventDefault();
@@ -73,12 +73,12 @@ const ChatBoxComponent: React.FC<Props> = ({ handleSubmit }) => {
         />
         <button
           className={`absolute bottom-2 right-2 rounded-full p-2 ${
-            isSubmitting
+            isConnected
               ? "bg-gray-200 cursor-not-allowed"
               : "bg-black text-white"
           }`}
           onClick={onSubmit}
-          disabled={isSubmitting}
+          disabled={isConnected}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import SidebarComponent from "@/components/sidebar";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { VerifyToken } from "@/api/auth";
-import { useSidebar } from "@/hook/sidebar";
+import { useSidebar } from "@/hooks/useSidebar";
 
 export default function ChatLayout({
   children,

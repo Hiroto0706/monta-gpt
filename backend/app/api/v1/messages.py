@@ -11,10 +11,9 @@ from db.models.message import Message
 from schemas.message import MessageCreateRequest, MessageResponse
 import utilities.config as config
 
-router = APIRouter(prefix="/messages", tags=["messages"])
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 @router.get("/{thread_id}", response_model=List[MessageResponse])
@@ -58,6 +57,8 @@ async def get_messages_by_session_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}",
         )
+    except HTTPException as http_exe:
+        raise http_exe
     except Exception as e:
         logger.error(
             f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}"
@@ -120,7 +121,7 @@ async def send_prompt(
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             response = await client.post(
-                f"{config.AGENT_URL}api/agent/",
+                f"{config.AGENT_URL}agent/",
                 json={
                     "prompt": message_create_request.prompt,
                     "conversation": formatted_conversation,
