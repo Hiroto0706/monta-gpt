@@ -58,10 +58,10 @@ async def get_chat_history(
         )
         if not chat_sessions:
             logger.info(f"No chat sessions found for user with ID {user_id}.")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No chat sessions found for user with ID {user_id}.",
-            )
+            # raise HTTPException(
+            #     status_code=status.HTTP_404_NOT_FOUND,
+            #     detail=f"No chat sessions found for user with ID {user_id}.",
+            # )
     except SQLAlchemyError as db_error:
         logger.error(
             f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}"
@@ -70,6 +70,8 @@ async def get_chat_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}",
         )
+    # except HTTPException as http_exe:
+    #     raise http_exe
     except Exception as e:
         logger.error(f"Unexpected error occurred: {str(e)}")
         raise HTTPException(

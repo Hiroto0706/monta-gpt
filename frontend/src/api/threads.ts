@@ -6,7 +6,10 @@ import { Thread } from "@/types/threads";
 */
 export const FetchThreadList = async (): Promise<Thread[]> => {
   try {
-    const response = await apiClient.get("chat_sessions/");
+    const response = await apiClient.get("chat_sessions/", {
+      withCredentials: true,
+    });
+
     return response.data;
   } catch (error) {
     console.error("Error fetching thread list: ", error);

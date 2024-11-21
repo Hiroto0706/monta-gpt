@@ -8,7 +8,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ThreadPage({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -20,7 +20,7 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
    * @param newContent {Message} WebSocketサーバから受け取ったメッセージ
    */
-  const handleWebSocketMessage = useCallback((newMessage: Message) => {
+  const handleWebSocketMessage = (newMessage: Message) => {
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages];
       for (let i = updatedMessages.length - 1; i >= 0; i--) {
@@ -36,7 +36,7 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
       }
       return updatedMessages;
     });
-  }, []);
+  };
 
   const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage, {
     session_id: params.id,
@@ -75,6 +75,7 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
           router.push("/new");
         }
       };
+
       loadThreadDetail();
     }
   }, [params.id]);

@@ -51,7 +51,10 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
   useEffect(() => {
     const loadThreads = async () => {
       const fetchedThreads = await FetchThreadList();
-      setThreads(fetchedThreads);
+
+      if (fetchedThreads.length > 0) {
+        setThreads(fetchedThreads);
+      }
     };
 
     loadThreads();

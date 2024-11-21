@@ -6,7 +6,7 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
 import { Message } from "@/types/messages";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function NewThreadPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -20,7 +20,7 @@ export default function NewThreadPage() {
    * handleWebSocketMessage はWebサーバから受け取ったメッセージを処理する関数
    * @param newMessage
    */
-  const handleWebSocketMessage = useCallback((newMessage: Message) => {
+  const handleWebSocketMessage = (newMessage: Message) => {
     const newUrl = `/thread/${newMessage.session_id}`;
 
     if (
@@ -48,7 +48,7 @@ export default function NewThreadPage() {
       }
       return updatedMessages;
     });
-  }, []);
+  };
 
   const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage);
 
