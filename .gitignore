@@ -1,5 +1,5 @@
 # backend
-*.pyc*
+*__pycache__*
 backend/app/.env.dev
 backend/app/.env.prd
 
