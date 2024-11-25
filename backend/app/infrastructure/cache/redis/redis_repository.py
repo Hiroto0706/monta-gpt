@@ -1,4 +1,4 @@
-from ast import List
+from typing import List
 import json
 import logging
 from typing import Any
@@ -12,7 +12,7 @@ class RedisRepository:
     """Redisを用いたキャッシュ操作を提供するクラス"""
 
     def __init__(self, redis_client: RedisClient):
-        self.client = redis_client.get_client()
+        self.client = redis_client
 
     def set(self, key: str, value: Any, expiration: int = None):
         """データをRedisにセットする"""

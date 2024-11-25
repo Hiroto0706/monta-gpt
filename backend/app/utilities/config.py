@@ -20,7 +20,6 @@ REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 REDIS_DB = os.getenv("REDIS_DB")
-REDIS_URL = os.getenv("REDIS_URL")
 
 # Google Cloud OAuth
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
