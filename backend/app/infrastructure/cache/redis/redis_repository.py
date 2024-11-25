@@ -1,3 +1,4 @@
+from datetime import datetime, date
 from typing import List
 import json
 import logging
@@ -14,13 +15,20 @@ class RedisRepository:
     def __init__(self, redis_client: RedisClient):
         self.client = redis_client
 
+    @staticmethod
+    def json_serializer(obj):
+        """JSONシリアライズ可能な形式に変換"""
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat() # ISO 8601形式の文字列に変換
+        raise TypeError(f"Type {type(obj)} not serializable")
+
     def set(self, key: str, value: Any, expiration: int = None):
         """データをRedisにセットする"""
         try:
-            data = json.dumps(value)
+            data = json.dumps(value, default=self.json_serializer)
             self.client.set(key, data, ex=expiration)
         except Exception as e:
-            logger.error(f"Failed to set key to Redis: {str(e)}")
+            logger.info(f"Failed to set key to Redis: {str(e)}")
             raise Exception(f"Failed to set key to Redis: {str(e)}")
 
     def get(self, key: str) -> Any:
@@ -31,7 +39,7 @@ class RedisRepository:
                 raise KeyError(f"{key} not found in Redis")
             return json.loads(data)
         except Exception as e:
-            logger.error(f"Failed to get key from Redis: {str(e)}")
+            logger.info(f"Failed to get key from Redis: {str(e)}")
             raise Exception(f"Failed to get key from Redis: {str(e)}")
 
     def delete(self, patterns: List[str]):

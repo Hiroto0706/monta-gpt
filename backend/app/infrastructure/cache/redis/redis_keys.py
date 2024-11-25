@@ -15,9 +15,9 @@ MESSAGES_LIST_KEY = "messages_list_{thread_id}"
 
 def get_sessions_list_key(user_id: UserID):
     """特定のユーザーに紐づくセッションリストを取得するためのRedisキーを生成する関数"""
-    return CHAT_SESSIONS_LIST_KEY.format(user_id=user_id.value)
+    return CHAT_SESSIONS_LIST_KEY.format(user_id=user_id)
 
 
 def get_messages_list_key(thread_id: ThreadID):
     """特定のスレッドに紐づくメッセージリストを取得するためのRedisキーを生成する関数"""
-    return MESSAGES_LIST_KEY.format(thread_id=thread_id.value)
+    return MESSAGES_LIST_KEY.format(thread_id=thread_id)

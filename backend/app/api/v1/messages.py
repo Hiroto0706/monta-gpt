@@ -5,9 +5,13 @@ import httpx
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
+from infrastructure.cache.connection import get_redis_connection
+from infrastructure.cache.redis.redis_keys import get_messages_list_key
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.users import get_user_payload
 from db.connection import get_db_connection
 from db.models.message import Message
+from domain.value_objects.thread import ThreadID
 from schemas.message import MessageCreateRequest, MessageResponse
 import utilities.config as config
 
@@ -18,9 +22,10 @@ logger = logging.getLogger(__name__)
 
 @router.get("/{thread_id}", response_model=List[MessageResponse])
 async def get_messages_by_session_id(
-    thread_id: int,
+    thread_id: ThreadID,
     current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
+    redis: RedisRepository = Depends(get_redis_connection),
 ):
     """
     指定された `thread_id` に基づいてメッセージのリストを取得します。
@@ -36,6 +41,13 @@ async def get_messages_by_session_id(
     Raises:
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
+    cache_key = get_messages_list_key(thread_id)
+    try:
+        messages_data = redis.get(cache_key)
+        messages = [MessageResponse(**item) for item in messages_data]
+        return messages
+    except Exception as e:
+        logger.info(f"Failed to get messages from Redis: {str(e)}")
     try:
         messages = (
             db.query(Message)
@@ -49,6 +61,15 @@ async def get_messages_by_session_id(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"No messages found for thread ID {thread_id}.",
             )
+
+        messages_data = [
+            MessageResponse.from_orm(message).dict() for message in messages
+        ]
+        try:
+            redis.set(cache_key, messages_data, expiration=3600)
+        except Exception as e:
+            logger.error(f"Failed to set messages to Redis: {str(e)}")
+
     except SQLAlchemyError as db_error:
         logger.error(
             f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}"

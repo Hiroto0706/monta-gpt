@@ -58,7 +58,7 @@ async def get_chat_history(
     try:
         chat_sessions = (
             db.query(ChatSession)
-            .filter(ChatSession.user_id == user_id.value)
+            .filter(ChatSession.user_id == user_id)
             .order_by(ChatSession.id.desc())
             .all()
         )
@@ -70,15 +70,15 @@ async def get_chat_history(
         try:
             redis.set(cache_key, chat_sessions_data, expiration=3600)
         except Exception as e:
-            logger.warning(f"Failed to save chat sessions to Redis: {str(e)}")
+            logger.warning(f"Failed to set chat sessions to Redis: {str(e)}")
 
     except SQLAlchemyError as db_error:
         logger.error(
-            f"Database error while fetching chat sessions for user {user_id.value}: {str(db_error)}"
+            f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error while fetching chat sessions for user {user_id.value}: {str(db_error)}",
+            detail=f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}",
         )
     except Exception as e:
         logger.error(f"Unexpected error occurred: {str(e)}")
@@ -87,7 +87,6 @@ async def get_chat_history(
             detail=f"Unexpected error occurred: {str(e)}",
         )
 
-    logger.info(f"Successfully retrieved chat sessions for user {user_id.value}")
     return chat_sessions
 
 
