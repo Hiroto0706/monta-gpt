@@ -5,6 +5,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Any, Dict, List
 from datetime import datetime, timedelta
+from infrastructure.cache.redis.redis_keys import (
+    CACHE_DURATION_DAY,
+    CACHE_DURATION_WEEK,
+    get_sessions_list_key,
+)
+from core.utilities import get_user_id_from_dict
+from infrastructure.cache.connection import get_redis_connection
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.users import get_user_payload
 from db.models.message import Message
 from db.connection import get_db_connection
@@ -27,6 +35,7 @@ logger = logging.getLogger(__name__)
 async def get_chat_history(
     current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
+    redis: RedisRepository = Depends(get_redis_connection),
 ):
     """
     指定されたユーザーのチャットセッション履歴を取得します。
@@ -34,6 +43,7 @@ async def get_chat_history(
     Args:
         current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
+        redis (Redis): Redisクライアント
 
     Returns:
         List[ChatSessionResponse]: チャットセッションのリスト
@@ -41,27 +51,35 @@ async def get_chat_history(
     Raises:
         HTTPException: データ取得中にエラーが発生した場合
     """
-    user_id = current_user.get("user_id")
-    if not user_id:
-        logger.warning("Unauthorized access attempt, user_id not found.")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized access attempt, user_id not found.",
-        )
+    user_id = get_user_id_from_dict(current_user)
+    cache_key = get_sessions_list_key(user_id)
     try:
-        # TODO: DBから取得する前にredisから取得する処理を書く
+        chat_sessions_data = redis.get(cache_key)
+        chat_sessions = [ChatSessionResponse(**item) for item in chat_sessions_data]
+        return chat_sessions
+    except Exception as e:
+        logger.info(f"Failed to get chat sessions from Redis: {str(e)}")
+    try:
         chat_sessions = (
             db.query(ChatSession)
             .filter(ChatSession.user_id == user_id)
             .order_by(ChatSession.id.desc())
             .all()
         )
-        if not chat_sessions:
-            logger.info(f"No chat sessions found for user with ID {user_id}.")
-            # raise HTTPException(
-            #     status_code=status.HTTP_404_NOT_FOUND,
-            #     detail=f"No chat sessions found for user with ID {user_id}.",
-            # )
+        chat_sessions_data = [
+            ChatSessionResponse.from_orm(chat_session).dict()
+            for chat_session in chat_sessions
+        ]
+
+        try:
+            redis.set(
+                cache_key,
+                chat_sessions_data,
+                expiration=CACHE_DURATION_WEEK.total_seconds(),
+            )
+        except Exception as e:
+            logger.warning(f"Failed to set chat sessions to Redis: {str(e)}")
+
     except SQLAlchemyError as db_error:
         logger.error(
             f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}"
@@ -70,15 +88,13 @@ async def get_chat_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while fetching chat sessions for user {user_id}: {str(db_error)}",
         )
-    # except HTTPException as http_exe:
-    #     raise http_exe
     except Exception as e:
         logger.error(f"Unexpected error occurred: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Unexpected error occurred: {str(e)}",
         )
-    logger.info(f"Successfully retrieved chat sessions for user {user_id}")
+
     return chat_sessions
 
 

@@ -10,6 +10,10 @@ from fastapi import (
     status,
 )
 from sqlalchemy.orm import Session
+from core.utilities import get_user_id_from_dict
+from infrastructure.cache.connection import get_redis_connection
+from infrastructure.cache.redis.redis_keys import get_sessions_list_key
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.agent import process_llm
 from db.connection import get_db_connection
 from db.models.chat_session import ChatSession
@@ -25,8 +29,17 @@ async def websocket_create_chat_session(
     websocket: WebSocket,
     access_token: str,
     db: Session = Depends(get_db_connection),
+    redis: RedisRepository = Depends(get_redis_connection),
 ):
+    """
+    Args:
+        websocket (WebSocket): WebSocket接続オブジェクト
+        access_token (string): 認証用のトークン
+        db (Session): データベースセッション
+        redis (Redis): Redisクライアント
+    """
     token_payload = verify_access_token(access_token)
+    user_id = get_user_id_from_dict(token_payload)
     await websocket.accept()
 
     try:
@@ -43,7 +56,7 @@ async def websocket_create_chat_session(
 
         # chat_sessionを作成
         new_chat_session = ChatSession(
-            user_id=token_payload.get("user_id"),
+            user_id=user_id,
             summary=message_content,
             start_time=datetime.utcnow(),
             end_time=datetime.utcnow()
@@ -54,6 +67,12 @@ async def websocket_create_chat_session(
         db.refresh(new_chat_session)
 
         session_id = new_chat_session.id
+
+        cache_key_pattern = get_sessions_list_key(user_id)
+        try:
+            redis.delete([cache_key_pattern])
+        except Exception as e:
+            logger.warning(f"Failed to delete cache for user {user_id}: {str(e)}")
 
         # Process LLM and stream the response
         async for chunk in process_llm(message_content, session_id, db):
