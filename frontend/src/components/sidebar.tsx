@@ -101,7 +101,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
                 className="text-2xl my-4 flex justify-center hover:opacity-70 duration-300"
                 onClick={() => handleLinkClick("/new")}
               >
-                もんたGPT
+                Monta GPT
               </Link>
               <Link
                 className="mb-2 px-2 py-1 w-full bg-white border rounded-xl border-gray-300 text-sm block shadow hover:bg-gray-100 duration-300"
@@ -140,7 +140,7 @@ const SidebarComponent: React.FC<Props> = ({ threadID }) => {
               className="mt-4 py-1 px-4 bg-gray-600 border-2 border-gray-600 rounded-xl text-white hover:bg-white hover:text-gray-600 duration-300 cursor-pointer text-center font-bold"
               onClick={logout}
             >
-              ログアウト
+              Log Out
             </div>
           </div>
         </div>

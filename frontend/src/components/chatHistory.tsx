@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
+import ReactMarkDown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import GeneratingAnimation from "./generatingAnimation";
 import { Message } from "@/types/messages";
 
@@ -46,7 +48,9 @@ const ChatHistoryComponent: React.FC<Props> = ({
                   key={index}
                   className={`mt-4 p-4 max-w-2xl mx-auto text-left break-words ${
                     message.is_user
-                      ? `${adjustFontSize(message.content)} rounded-lg bg-gray-100 shadow`
+                      ? `${adjustFontSize(
+                          message.content
+                        )} rounded-lg bg-gray-100 shadow`
                       : index === messages.length - 1
                       ? "pb-8"
                       : "pb-8 border-b border-gray-300"
@@ -54,22 +58,20 @@ const ChatHistoryComponent: React.FC<Props> = ({
                 >
                   {!message.is_user && (
                     <div className="flex items-center mb-4">
-                      <>
-                        <div className="rounded-full bg-gray-300 w-8 h-8 flex items-center justify-center mr-2">
-                          A
-                        </div>
-                        <p className="ml-2">もんた</p>
-                      </>
+                      <div className="rounded-full bg-gray-300 w-8 h-8 flex items-center justify-center mr-2">
+                        A
+                      </div>
+                      <p className="ml-2">Monta</p>
                     </div>
                   )}
-                  <p className={`${message.is_user ? "" : "break-words"} `}>
-                    {message.content}
-                    {message.is_generating && (
-                      <>
-                        <GeneratingAnimation />
-                      </>
-                    )}
-                  </p>
+                  <div
+                    className={`${message.is_user ? "" : "break-words"} prose`}
+                  >
+                    <ReactMarkDown remarkPlugins={[remarkGfm]}>
+                      {message.content}
+                    </ReactMarkDown>
+                    {message.is_generating && <GeneratingAnimation />}
+                  </div>
                 </div>
               ))}
               {/* 一番下へのスクロール用のダミー要素 */}

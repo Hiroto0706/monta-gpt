@@ -8,7 +8,7 @@ export default function Home() {
     <>
       <div className="flex h-screen justify-center items-center">
         <main className="flex flex-col justify-center items-center p-8 md:p-16 bg-white rounded-lg border border-gray-200">
-          <h1 className="text-3xl font-bold my-16">もんたGPT</h1>
+          <h1 className="text-3xl font-bold my-16">Monta GPT</h1>
           <button
             onClick={() => RedirectGoogleLoginPage()}
             className="flex items-center justify-center w-64 bg-white border border-gray-200 font-medium py-2 px-4 shadow rounded-lg hover:bg-gray-100"
@@ -20,7 +20,7 @@ export default function Home() {
               width={64}
               height={64}
             />
-            Googleでログイン
+            Sign in with Google
           </button>
         </main>
       </div>

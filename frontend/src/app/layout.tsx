@@ -15,8 +15,8 @@ export default function RootLayout({
   return (
     <html lang="jp">
       <Head>
-        <title>もんたGPT</title>
-        <meta name="description" content="Googleでログインするページ" />
+        <title>Monta GPT</title>
+        <meta name="description" content="Sign in with Google" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
