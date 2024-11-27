@@ -11,6 +11,9 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 
+from infrastructure.cache.redis.redis_keys import get_messages_list_key
+from infrastructure.cache.connection import get_redis_connection
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.agent import process_llm
 from db.connection import get_db_connection
 from db.models.message import Message
@@ -26,14 +29,15 @@ async def websocket_conversation(
     access_token: str,
     session_id: int = 0,
     db: Session = Depends(get_db_connection),
+    redis: RedisRepository = Depends(get_redis_connection),
 ):
     """
-    WebSocketで10秒間、1秒ごとに固定メッセージを送信し、その後通信を切断するエンドポイント。
-
     Args:
         websocket (WebSocket): WebSocket接続オブジェクト
         access_token (string): 認証用のトークン
         session_id (int): ユーザーのセッションID
+        db (Session): データベースセッション
+        redis (Redis): Redisクライアント
     """
     verify_access_token(access_token)
     await websocket.accept()
@@ -49,6 +53,14 @@ async def websocket_conversation(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid message format. 'message' field is required.",
+            )
+
+        cache_key_pattern = get_messages_list_key(session_id)
+        try:
+            redis.delete([cache_key_pattern])
+        except Exception as e:
+            logger.warning(
+                f"Failed to delete cache for chat_session {session_id}: {str(e)}"
             )
 
         conversation_histories = (

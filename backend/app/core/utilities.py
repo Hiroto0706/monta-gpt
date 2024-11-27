@@ -8,7 +8,7 @@ from domain.value_objects.user import UserID
 logger = logging.getLogger(__name__)
 
 
-def get_user_id_from_dict(current_user: Dict[str, Any]) -> int:
+def get_user_id_from_dict(current_user: Dict[str, Any]) -> UserID:
     user_id = UserID(current_user.get("user_id"))
     if not user_id:
         logger.warning("Unauthorized access attempt, user_id not found.")

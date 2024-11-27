@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Any, Dict, List
 from datetime import datetime, timedelta
-from infrastructure.cache.redis.redis_keys import get_sessions_list_key
+from infrastructure.cache.redis.redis_keys import (
+    CACHE_DURATION_DAY,
+    CACHE_DURATION_WEEK,
+    get_sessions_list_key,
+)
 from core.utilities import get_user_id_from_dict
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_repository import RedisRepository
@@ -68,7 +72,11 @@ async def get_chat_history(
         ]
 
         try:
-            redis.set(cache_key, chat_sessions_data, expiration=3600)
+            redis.set(
+                cache_key,
+                chat_sessions_data,
+                expiration=CACHE_DURATION_WEEK.total_seconds(),
+            )
         except Exception as e:
             logger.warning(f"Failed to set chat sessions to Redis: {str(e)}")
 

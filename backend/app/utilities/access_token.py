@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import logging
+from typing import Any, Dict
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
 import utilities.config as config
@@ -28,7 +29,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
         raise ValueError(f"Failed to create JWT token: {str(e)}")
 
 
-def verify_access_token(token: str):
+def verify_access_token(token: str) -> Dict[str, Any]:
     """
     JWTトークンを検証する
     """

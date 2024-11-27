@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import List
+from typing import List, Literal
 import json
 import logging
 from typing import Any
@@ -19,11 +19,13 @@ class RedisRepository:
     def json_serializer(obj):
         """JSONシリアライズ可能な形式に変換"""
         if isinstance(obj, (datetime, date)):
-            return obj.isoformat() # ISO 8601形式の文字列に変換
+            return obj.isoformat()  # ISO 8601形式の文字列に変換
         raise TypeError(f"Type {type(obj)} not serializable")
 
-    def set(self, key: str, value: Any, expiration: int = None):
+    def set(self, key: str, value: Any, expiration: int | float):
         """データをRedisにセットする"""
+        if isinstance(expiration, float):
+            expiration = int(expiration)
         try:
             data = json.dumps(value, default=self.json_serializer)
             self.client.set(key, data, ex=expiration)

@@ -6,12 +6,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from infrastructure.cache.connection import get_redis_connection
-from infrastructure.cache.redis.redis_keys import get_messages_list_key
+from infrastructure.cache.redis.redis_keys import (
+    CACHE_DURATION_DAY,
+    get_messages_list_key,
+)
 from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.users import get_user_payload
 from db.connection import get_db_connection
 from db.models.message import Message
-from domain.value_objects.thread import ThreadID
+from domain.value_objects.chat_session import ChatSessionID
 from schemas.message import MessageCreateRequest, MessageResponse
 import utilities.config as config
 
@@ -20,20 +23,21 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.get("/{thread_id}", response_model=List[MessageResponse])
+@router.get("/{chat_session_id}", response_model=List[MessageResponse])
 async def get_messages_by_session_id(
-    thread_id: ThreadID,
+    chat_session_id: ChatSessionID,
     current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
     redis: RedisRepository = Depends(get_redis_connection),
 ):
     """
-    指定された `thread_id` に基づいてメッセージのリストを取得します。
+    指定された `chat_session_id` に基づいてメッセージのリストを取得します。
 
     Args:
-        thread_id (int): メッセージを取得するスレッドのID
+        chat_session_id (int): メッセージを取得するスレッドのID
         current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
         db (Session): データベースセッション
+        redis (Redis): Redisクライアント
 
     Returns:
         List[MessageResponse]: 指定されたスレッドに含まれるメッセージのリスト
@@ -41,7 +45,7 @@ async def get_messages_by_session_id(
     Raises:
         HTTPException: スレッドIDに関連するメッセージが見つからない場合
     """
-    cache_key = get_messages_list_key(thread_id)
+    cache_key = get_messages_list_key(chat_session_id)
     try:
         messages_data = redis.get(cache_key)
         messages = [MessageResponse(**item) for item in messages_data]
@@ -51,42 +55,46 @@ async def get_messages_by_session_id(
     try:
         messages = (
             db.query(Message)
-            .filter(Message.session_id == thread_id)
+            .filter(Message.session_id == chat_session_id)
             .order_by(Message.id)
             .all()
         )
         if not messages:
-            logger.info(f"No messages found for thread ID {thread_id}.")
+            logger.info(f"No messages found for Chat Session ID {chat_session_id}.")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No messages found for thread ID {thread_id}.",
+                detail=f"No messages found for Chat Session ID {chat_session_id}.",
             )
 
         messages_data = [
             MessageResponse.from_orm(message).dict() for message in messages
         ]
         try:
-            redis.set(cache_key, messages_data, expiration=3600)
+            redis.set(
+                cache_key,
+                messages_data,
+                expiration=CACHE_DURATION_DAY.total_seconds(),
+            )
         except Exception as e:
             logger.error(f"Failed to set messages to Redis: {str(e)}")
 
     except SQLAlchemyError as db_error:
         logger.error(
-            f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}"
+            f"Database error while retrieving messages for Chat Session ID {chat_session_id}: {str(db_error)}"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error while retrieving messages for thread ID {thread_id}: {str(db_error)}",
+            detail=f"Database error while retrieving messages for Chat Session ID {chat_session_id}: {str(db_error)}",
         )
     except HTTPException as http_exe:
         raise http_exe
     except Exception as e:
         logger.error(
-            f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}"
+            f"Unexpected error occurred while retrieving messages for Chat Session ID {chat_session_id}: {str(e)}"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Unexpected error occurred while retrieving messages for thread ID {thread_id}: {str(e)}",
+            detail=f"Unexpected error occurred while retrieving messages for Chat Session ID {chat_session_id}: {str(e)}",
         )
     return messages
 
