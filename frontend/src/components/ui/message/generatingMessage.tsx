@@ -1,6 +1,6 @@
 import React from "react";
 
-const GeneratingAnimation: React.FC = () => {
+const GeneratingMessage: React.FC = () => {
   return (
     <>
       <p>generating...</p>
@@ -13,4 +13,4 @@ const GeneratingAnimation: React.FC = () => {
   );
 };
 
-export default GeneratingAnimation;
+export default GeneratingMessage;

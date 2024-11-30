@@ -1,10 +1,15 @@
 "use client";
 
-import ChatBoxComponent from "@/components/chatBox";
-import ChatHistoryComponent from "@/components/chatHistory";
+import ChatBoxComponent from "@/components/ui/form/chatBox";
+import ChatHistoryLayout from "@/components/layouts/chat/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
+import {
+  addNewMessageToPreviousMessages,
+  CreateGeneratingMessage,
+  CreateUserMessage,
+  ScrollToBottom,
+} from "@/lib/utils/message";
 import { Message } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
 
@@ -33,21 +38,9 @@ export default function NewThreadPage() {
       hasNavigatedRef.current = true;
     }
 
-    setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages];
-      for (let i = updatedMessages.length - 1; i >= 0; i--) {
-        if (!updatedMessages[i].is_user) {
-          const existingContent = updatedMessages[i].content ?? "";
-          updatedMessages[i] = {
-            ...updatedMessages[i],
-            content: existingContent + newMessage.content,
-            is_generating: false,
-          };
-          break;
-        }
-      }
-      return updatedMessages;
-    });
+    setMessages((prevMessages) =>
+      addNewMessageToPreviousMessages(prevMessages, newMessage)
+    );
   };
 
   const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage);
@@ -77,25 +70,16 @@ export default function NewThreadPage() {
     }
   };
 
-  // FIXME: これはカスタムフックしたい
-  /**
-   * scrollToBottom は一番下部に要素をスクロールする関数
-   */
-  const scrollToBottom = (): void => {
-    if (messagesEndRef != undefined) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
+  // 会話履歴が取得できたら一番下にスクロールする
   useEffect(() => {
-    scrollToBottom();
+    ScrollToBottom(messagesEndRef);
   }, [messages.length]);
 
   return (
     <>
       {hasChatStartRef.current ? (
         <>
-          <ChatHistoryComponent
+          <ChatHistoryLayout
             messages={messages}
             messagesEndRef={messagesEndRef}
           />

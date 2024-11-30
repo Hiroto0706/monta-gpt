@@ -1,11 +1,15 @@
 "use client";
 
 import { FetchMessagesList } from "@/api/messages";
-import ChatBoxComponent from "@/components/chatBox";
-import ChatHistoryComponent from "@/components/chatHistory";
+import ChatBoxComponent from "@/components/ui/form/chatBox";
+import ChatHistoryLayout from "@/components/layouts/chat/chatHistory";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { CreateGeneratingMessage, CreateUserMessage } from "@/lib/utils";
+import {
+  addNewMessageToPreviousMessages,
+  CreateGeneratingMessage,
+  CreateUserMessage,
+} from "@/lib/utils/message";
 import { Message } from "@/types/messages";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -21,21 +25,9 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    * @param newContent {Message} WebSocketサーバから受け取ったメッセージ
    */
   const handleWebSocketMessage = (newMessage: Message) => {
-    setMessages((prevMessages) => {
-      const updatedMessages = [...prevMessages];
-      for (let i = updatedMessages.length - 1; i >= 0; i--) {
-        if (!updatedMessages[i].is_user) {
-          const existingContent = updatedMessages[i].content ?? "";
-          updatedMessages[i] = {
-            ...updatedMessages[i],
-            content: existingContent + newMessage.content,
-            is_generating: false,
-          };
-          break;
-        }
-      }
-      return updatedMessages;
-    });
+    setMessages((prevMessages) =>
+      addNewMessageToPreviousMessages(prevMessages, newMessage)
+    );
   };
 
   const { sendMessage, isConnected } = useWebSocket(handleWebSocketMessage, {
@@ -48,7 +40,6 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
    */
   const handleSubmit = async (value: string) => {
     if (!isConnected) {
-      // FIXME: idはwebsocket通信よりidが帰ってきたらmessagesに追加するようにする
       const userMessage = CreateUserMessage(value);
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
@@ -82,10 +73,7 @@ export default function ThreadPage({ params }: { params: { id: number } }) {
 
   return (
     <>
-      <ChatHistoryComponent
-        messages={messages}
-        messagesEndRef={messagesEndRef}
-      />
+      <ChatHistoryLayout messages={messages} messagesEndRef={messagesEndRef} />
       <div
         className={`fixed bottom-0 w-full max-w-[580px] lg:max-w-[640px] transform -translate-x-1/2 p-4 duration-300 left-[50%] ${
           !isOpen ? "" : "md:left-[calc(50%+6.5rem)]"

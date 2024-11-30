@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import { useChatBox } from "@/hooks/useChatBox";
+import React from "react";
 
 interface Props {
   handleSubmit: (value: string) => Promise<void>;
@@ -9,54 +10,15 @@ const ChatBoxComponent: React.FC<Props> = ({
   handleSubmit,
   isConnected = false,
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isComposing, setIsComposing] = useState(false);
-
-  const handleInput = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        200
-      )}px`;
-    }
-  };
-
-  const onSubmit = async () => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const value = textarea.value.trim();
-    if (value) {
-      textarea.value = "";
-      textarea.style.height = "auto";
-      try {
-        await handleSubmit(value);
-      } catch (error) {
-        console.error("Error submitting message:", error);
-      }
-    }
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey &&
-      !isConnected &&
-      !isComposing
-    ) {
-      event.preventDefault();
-      onSubmit();
-    }
-  };
-
-  const handleCompositionStart = () => {
-    setIsComposing(true);
-  };
-
-  const handleCompositionEnd = () => {
-    setIsComposing(false);
-  };
+  const {
+    query,
+    setQuery,
+    textareaRef,
+    onSubmit,
+    handleKeyDown,
+    handleCompositionStart,
+    handleCompositionEnd,
+  } = useChatBox(handleSubmit, isConnected);
 
   return (
     <>
@@ -64,9 +26,10 @@ const ChatBoxComponent: React.FC<Props> = ({
         <textarea
           ref={textareaRef}
           placeholder="Prompt type here..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           className="rounded-3xl w-full pl-4 pr-9 py-1 text-gray-700 focus:outline-none resize-none overflow-y-auto"
           rows={1}
-          onInput={handleInput}
           onKeyDown={handleKeyDown}
           onCompositionStart={handleCompositionStart}
           onCompositionEnd={handleCompositionEnd}

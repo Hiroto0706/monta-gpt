@@ -40,7 +40,7 @@ async def process_llm(
     system_template = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(
-                """
+            """
             # Adaptive Engineering Analysis Framework
 
             ## Examples for Dynamic Response Generation

@@ -1,4 +1,4 @@
-import { CreateAgentMessage, CreateErrorMessage } from "@/lib/utils";
+import { CreateAgentMessage, CreateErrorMessage } from "@/lib/utils/message";
 import { Message } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
 

@@ -1,10 +1,5 @@
 import { Message } from "@/types/messages";
 
-export const logout = () => {
-  // sessionStorage.removeItem("access_token");
-  window.location.href = "/";
-};
-
 export const CreateUserMessage = (
   value: string,
   threadID: number = 0
@@ -53,4 +48,34 @@ export const CreateErrorMessage = (
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
+};
+
+/**
+ * scrollToBottom はtargetRefに要素をスクロールする関数
+ */
+export const ScrollToBottom = (
+  targetRef: React.RefObject<HTMLDivElement> | undefined
+): void => {
+  if (targetRef != undefined) {
+    targetRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
+export const addNewMessageToPreviousMessages = (
+  prevMessages: Message[],
+  newMessage: Message
+): Message[] => {
+  const updatedMessages = [...prevMessages];
+  for (let i = updatedMessages.length - 1; i >= 0; i--) {
+    if (!updatedMessages[i].is_user) {
+      const existingContent = updatedMessages[i].content ?? "";
+      updatedMessages[i] = {
+        ...updatedMessages[i],
+        content: existingContent + newMessage.content,
+        is_generating: false,
+      };
+      break;
+    }
+  }
+  return updatedMessages;
 };

@@ -46,7 +46,7 @@ function ChatLayoutContent({
 }) {
   const { isOpen, toggleSidebar } = useSidebar();
 
-  // TODO: サイドバーはPC版とスマホ版で分けたほうがよい
+  // FIXME: サイドバーはPC版とスマホ版で分けたほうがよい
   useEffect(() => {
     const breakPoint = 768;
     if (window.innerWidth >= breakPoint) {
