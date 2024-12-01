@@ -1,20 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import SidebarComponent from "@/components/sidebar";
-import { SidebarProvider } from "@/contexts/SidebarContext";
+import SidebarLayout from "@/components/layouts/sidebar";
 import { VerifyToken } from "@/api/auth";
-import { useSidebar } from "@/hooks/useSidebar";
+import { SidebarContext } from "@/contexts/sidebarContext";
 
-export default function ChatLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [threadId, setThreadId] = useState<number | null>(null);
+  const { isOpen, toggleSidebar } = useContext(SidebarContext);
 
   useEffect(() => {
     VerifyToken(router);
@@ -28,24 +24,6 @@ export default function ChatLayout({
     }
   }, [pathname]);
 
-  return (
-    <>
-      <SidebarProvider>
-        <ChatLayoutContent threadId={threadId}>{children}</ChatLayoutContent>
-      </SidebarProvider>
-    </>
-  );
-}
-
-function ChatLayoutContent({
-  children,
-  threadId,
-}: {
-  children: React.ReactNode;
-  threadId: number | null;
-}) {
-  const { isOpen, toggleSidebar } = useSidebar();
-
   // FIXME: サイドバーはPC版とスマホ版で分けたほうがよい
   useEffect(() => {
     const breakPoint = 768;
@@ -56,7 +34,7 @@ function ChatLayoutContent({
 
   return (
     <>
-      <SidebarComponent threadID={threadId} />
+      <SidebarLayout threadID={threadId} />
       <div
         className={`duration-300 transition-all ${
           isOpen ? "pl-0 md:pl-52" : "pl-0"

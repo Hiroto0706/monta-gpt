@@ -1,8 +1,7 @@
 "use client";
 
 import ChatBoxComponent from "@/components/ui/form/chatBox";
-import ChatHistoryLayout from "@/components/layouts/chat/chatHistory";
-import { useSidebar } from "@/hooks/useSidebar";
+import ChatHistoryLayout from "@/components/layouts/chatHistory";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   addNewMessageToPreviousMessages,
@@ -11,28 +10,30 @@ import {
   ScrollToBottom,
 } from "@/lib/utils/message";
 import { Message } from "@/types/messages";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { SidebarContext } from "@/contexts/sidebarContext";
 
-export default function NewThreadPage() {
+export default function Page() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasChatStartRef = useRef(false);
   const hasNavigatedRef = useRef(false); // URL画面遷移済みかどうかを管理する
   const sessionIDRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const { isOpen } = useSidebar();
+  const { isOpen } = useContext(SidebarContext);
 
   /**
    * handleWebSocketMessage はWebサーバから受け取ったメッセージを処理する関数
    * @param newMessage
    */
   const handleWebSocketMessage = (newMessage: Message) => {
+    // 画面遷移の条件定義 & ロジック
     const newUrl = `/thread/${newMessage.session_id}`;
-
-    if (
+    const hasTransitionCondition =
       !hasNavigatedRef.current &&
       newMessage.session_id !== 0 &&
-      window.location.pathname !== newUrl
-    ) {
+      window.location.pathname !== newUrl;
+
+    if (hasTransitionCondition) {
       sessionIDRef.current = newMessage.session_id;
       window.history.pushState(null, "", newUrl);
       hasNavigatedRef.current = true;

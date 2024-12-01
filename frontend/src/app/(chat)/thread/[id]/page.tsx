@@ -2,8 +2,7 @@
 
 import { FetchMessagesList } from "@/api/messages";
 import ChatBoxComponent from "@/components/ui/form/chatBox";
-import ChatHistoryLayout from "@/components/layouts/chat/chatHistory";
-import { useSidebar } from "@/hooks/useSidebar";
+import ChatHistoryLayout from "@/components/layouts/chatHistory";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   addNewMessageToPreviousMessages,
@@ -12,12 +11,13 @@ import {
 } from "@/lib/utils/message";
 import { Message } from "@/types/messages";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { SidebarContext } from "@/contexts/sidebarContext";
 
-export default function ThreadPage({ params }: { params: { id: number } }) {
+export default function Page({ params }: { params: { id: number } }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isOpen } = useSidebar();
+  const { isOpen } = useContext(SidebarContext);
   const router = useRouter();
 
   /**

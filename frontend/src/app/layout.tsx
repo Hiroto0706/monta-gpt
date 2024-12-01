@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import { metadata } from "@/components/layouts/head";
+import { SidebarProvider } from "@/contexts/sidebarContext";
 export { metadata };
 
 export default function RootLayout({
@@ -9,7 +10,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="text-gray-600 bg-gray-50">{children}</body>
+      <body className="text-gray-600 bg-gray-50">
+        <SidebarProvider>{children}</SidebarProvider>
+      </body>
     </html>
   );
 }
