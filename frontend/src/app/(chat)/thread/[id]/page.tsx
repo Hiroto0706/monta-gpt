@@ -9,13 +9,15 @@ import {
   CreateGeneratingMessage,
   CreateUserMessage,
 } from "@/lib/utils/message";
-import { Message } from "@/types/messages";
+import { AIMessage, GeneratingMessage, HumanMessage } from "@/types/messages";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react";
 import { SidebarContext } from "@/contexts/sidebarContext";
 
 export default function Page({ params }: { params: { id: number } }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<
+    (HumanMessage | AIMessage | GeneratingMessage)[]
+  >([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isOpen } = useContext(SidebarContext);
   const router = useRouter();
@@ -24,7 +26,7 @@ export default function Page({ params }: { params: { id: number } }) {
    * handleWebSocketMessage はWebサーバから受け取ったmessageを処理する関数
    * @param newContent {Message} WebSocketサーバから受け取ったメッセージ
    */
-  const handleWebSocketMessage = (newMessage: Message) => {
+  const handleWebSocketMessage = (newMessage: AIMessage) => {
     setMessages((prevMessages) =>
       addNewMessageToPreviousMessages(prevMessages, newMessage)
     );

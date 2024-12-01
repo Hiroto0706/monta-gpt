@@ -1,9 +1,9 @@
-import { Message } from "@/types/messages";
+import { HumanMessage } from "@/types/messages";
 import React from "react";
 
 interface Props {
   index: number;
-  message: Message;
+  message: HumanMessage;
 }
 
 const UserMessage: React.FC<Props> = ({ index, message }) => {
@@ -15,6 +15,8 @@ const UserMessage: React.FC<Props> = ({ index, message }) => {
   const adjustFontSize = (content: string = ""): string => {
     return content.length > 100 ? "" : "text-lg";
   };
+
+  console.log("ここ通ってる？")
 
   return (
     <>

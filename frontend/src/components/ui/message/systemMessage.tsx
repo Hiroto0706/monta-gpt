@@ -1,12 +1,12 @@
-import { Message } from "@/types/messages";
+import { AIMessage, GeneratingMessage } from "@/types/messages";
 import React from "react";
 import ReactMarkDown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import GeneratingMessage from "@/components/ui/message/generatingMessage";
+import GeneratingMessageComponent from "@/components/ui/message/generatingMessage";
 
 interface Props {
   index: number;
-  message: Message;
+  message: AIMessage | GeneratingMessage;
   isLastMessage: boolean;
 }
 
@@ -36,7 +36,7 @@ const SystemMessage: React.FC<Props> = ({ index, message, isLastMessage }) => {
           >
             {message.content}
           </ReactMarkDown>
-          {message.is_generating && <GeneratingMessage />}
+          {message.isGenerating && <GeneratingMessageComponent />}
         </div>
       </div>
     </>

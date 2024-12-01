@@ -9,7 +9,7 @@ import {
   CreateUserMessage,
   ScrollToBottom,
 } from "@/lib/utils/message";
-import { Message } from "@/types/messages";
+import { AIMessage, GeneratingMessage, HumanMessage } from "@/types/messages";
 import { useContext, useEffect, useRef, useState } from "react";
 import { SidebarContext } from "@/contexts/sidebarContext";
 
@@ -18,23 +18,25 @@ export default function Page() {
   const hasChatStartRef = useRef(false);
   const hasNavigatedRef = useRef(false); // URL画面遷移済みかどうかを管理する
   const sessionIDRef = useRef<number | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<
+    (HumanMessage | AIMessage | GeneratingMessage)[]
+  >([]);
   const { isOpen } = useContext(SidebarContext);
 
   /**
    * handleWebSocketMessage はWebサーバから受け取ったメッセージを処理する関数
    * @param newMessage
    */
-  const handleWebSocketMessage = (newMessage: Message) => {
+  const handleWebSocketMessage = (newMessage: AIMessage) => {
     // 画面遷移の条件定義 & ロジック
-    const newUrl = `/thread/${newMessage.session_id}`;
+    const newUrl = `/thread/${newMessage.sessionID}`;
     const hasTransitionCondition =
       !hasNavigatedRef.current &&
-      newMessage.session_id !== 0 &&
+      newMessage.sessionID !== 0 &&
       window.location.pathname !== newUrl;
 
     if (hasTransitionCondition) {
-      sessionIDRef.current = newMessage.session_id;
+      sessionIDRef.current = newMessage.sessionID;
       window.history.pushState(null, "", newUrl);
       hasNavigatedRef.current = true;
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { FetchThreadList } from "@/api/threads";
-import { Thread } from "@/types/chat_sessions";
+import { ChatSession } from "@/types/chat_sessions";
 import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import LogOutButton from "@/components/ui/button/logoutButton";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 const SidebarLayout: React.FC<Props> = ({ threadID }) => {
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const [threads, setThreads] = useState<ChatSession[]>([]);
   const { isOpen, toggleSidebar } = useContext(SidebarContext);
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
   const router = useRouter();
@@ -49,6 +49,9 @@ const SidebarLayout: React.FC<Props> = ({ threadID }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /**
+   * sessionIDが変化した時、chatSessionを取得する
+   */
   useEffect(() => {
     const loadThreads = async () => {
       const fetchedThreads = await FetchThreadList();

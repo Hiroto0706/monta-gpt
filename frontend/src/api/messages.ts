@@ -1,14 +1,18 @@
 import apiClient from "@/lib/apiClient";
-import { ContinueConversationRequest, Message } from "@/types/messages";
+import {
+  AIMessage,
+  ContinueConversationRequest,
+  HumanMessage,
+} from "@/types/messages";
 
 /*
-  FetchMessagesList はthreadIDに紐づいたメッセージを取得する関数
+  FetchMessagesList はsessionIDに紐づいたメッセージを取得する関数
 */
 export const FetchMessagesList = async (
-  threadID: number
-): Promise<Message[]> => {
+  sessionID: number
+): Promise<HumanMessage[] | AIMessage[]> => {
   try {
-    const response = await apiClient.get(`messages/${threadID}`, {
+    const response = await apiClient.get(`messages/${sessionID}`, {
       withCredentials: true,
     });
 
@@ -20,14 +24,14 @@ export const FetchMessagesList = async (
 };
 
 /*
-  ContinueConversation はthreadIDでAgentとの会話を行う関数
+  ContinueConversation はsessionIDでAgentとの会話を行う関数
 */
 export const ContinueConversation = async (
-  session_id: number,
+  sessionID: number,
   prompt: string
-): Promise<Message> => {
+): Promise<AIMessage> => {
   const formData: ContinueConversationRequest = {
-    session_id,
+    sessionID,
     prompt,
   };
 

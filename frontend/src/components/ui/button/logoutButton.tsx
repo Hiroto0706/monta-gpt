@@ -1,8 +1,8 @@
 import { useRouter } from "next/navigation";
 
 const LogOutButton = () => {
+  const router = useRouter();
   const logoutHandler = () => {
-    const router = useRouter();
     router.push("/");
   };
 

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Thread } from "@/types/chat_sessions";
+import { ChatSession } from "@/types/chat_sessions";
 import Link from "next/link";
 import React from "react";
 
 interface Props {
   isActive: boolean;
-  thread: Thread;
+  thread: ChatSession;
   onClick: (target: string) => void;
 }
 

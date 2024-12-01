@@ -1,11 +1,11 @@
 "use client";
 
-import { Thread } from "@/types/chat_sessions";
+import { ChatSession } from "@/types/chat_sessions";
 import ChatSessionCard from "@/components/ui/sidebar/chatSessionCard";
 import React from "react";
 
 interface Props {
-  threads: Thread[];
+  threads: ChatSession[];
   threadID: number | null;
   onClick: (target: string) => void;
 }

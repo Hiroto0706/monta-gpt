@@ -1,8 +1,8 @@
 import { CreateAgentMessage, CreateErrorMessage } from "@/lib/utils/message";
-import { Message } from "@/types/messages";
+import { AIMessage } from "@/types/messages";
 import { useEffect, useRef, useState } from "react";
 
-type MessageHandler = (message: Message) => void;
+type MessageHandler = (message: AIMessage) => void;
 
 export const useWebSocket = (
   onMessage: MessageHandler,
