@@ -4,7 +4,7 @@ import requests
 from fastapi.responses import RedirectResponse
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from backend.app.application.usecase.handle_google_auth_callback_usecase import (
+from application.usecase.handle_google_auth_callback_usecase import (
     HandleGoogleAuthCallbackUseCase,
 )
 from utilities.access_token import create_access_token

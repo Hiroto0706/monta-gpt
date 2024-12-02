@@ -2,17 +2,16 @@ import logging
 from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
-import requests
-from backend.app.application.usecase.generate_google_auth_url_usecase import (
+from application.usecase.generate_google_auth_url_usecase import (
     GenerateGoogleAuthURLUseCase,
 )
-from backend.app.application.usecase.handle_google_auth_callback_usecase import (
+from application.usecase.handle_google_auth_callback_usecase import (
     HandleGoogleAuthCallbackUseCase,
 )
-from backend.app.domain.services.generate_google_auth_url_service import (
+from domain.services.generate_google_auth_url_service import (
     GenerateGoogleAuthURLService,
 )
-from backend.app.domain.services.handle_google_auth_callback_usecase_service import (
+from domain.services.handle_google_auth_callback_usecase_service import (
     HandleGoogleAuthCallbackService,
 )
 from services.users import get_or_create_user, get_user_payload
