@@ -37,3 +37,10 @@ class UserRepository(ABC):
         指定されたuser_idに基づいてユーザーを削除します。
         """
         pass
+
+    @abstractmethod
+    def get_or_create_user(self, username: str, email: str) -> User:
+        """
+        ユーザーを取得または作成します。
+        """
+        pass

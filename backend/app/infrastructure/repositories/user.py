@@ -78,3 +78,21 @@ class UserRepositoryImpl(UserRepository):
             self._db.rollback()
             logger.error(f"Error deleting user: {str(e)}")
             return False
+
+    def get_or_create_user(self, username: str, email: str) -> User:
+        """
+        ユーザーを取得または作成します。
+        """
+        try:
+            user = self._db.query(User).filter(User.email == email).first()
+            if user:
+                user.username = username
+            else:
+                user = User(username=username, email=email)
+                self._db.add(user)
+            self._db.commit()
+            self._db.refresh(user)
+            return user
+        except SQLAlchemyError as db_error:
+            self._db.rollback()
+            raise db_error

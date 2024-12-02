@@ -6,11 +6,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Any, Dict, List
 from datetime import datetime, timedelta
 from infrastructure.cache.redis.redis_keys import (
-    CACHE_DURATION_DAY,
     CACHE_DURATION_WEEK,
     get_sessions_list_key,
 )
-from core.utilities import get_user_id_from_dict
+from utilities.dict import get_user_id_from_dict
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_repository import RedisRepository
 from services.users import get_user_payload

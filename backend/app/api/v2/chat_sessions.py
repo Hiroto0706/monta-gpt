@@ -10,7 +10,7 @@ from fastapi import (
     status,
 )
 from sqlalchemy.orm import Session
-from core.utilities import get_user_id_from_dict
+from utilities.dict import get_user_id_from_dict
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_keys import get_sessions_list_key
 from infrastructure.cache.redis.redis_repository import RedisRepository
