@@ -5,13 +5,13 @@ import httpx
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
+from application.services.user import get_user_payload
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_keys import (
     CACHE_DURATION_DAY,
     get_messages_list_key,
 )
 from infrastructure.cache.redis.redis_repository import RedisRepository
-from services.users import get_user_payload
 from db.connection import get_db_connection
 from db.models.message import Message
 from domain.value_objects.chat_session import ChatSessionID

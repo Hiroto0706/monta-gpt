@@ -18,3 +18,4 @@ def get_user_id_from_dict(current_user: Dict[str, Any]) -> UserID:
         )
 
     return user_id
+

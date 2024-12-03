@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from infrastructure.database.models.user import User
-from infrastructure.repositories.user import UserRepository
+from domain.repositories.user import UserRepository
 
 logger = logging.getLogger(__name__)
 

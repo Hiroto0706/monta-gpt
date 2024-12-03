@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from application.usecase.generate_google_auth_url_usecase import (
     GenerateGoogleAuthURLUseCase,
@@ -8,21 +8,15 @@ from application.usecase.generate_google_auth_url_usecase import (
 from application.usecase.handle_google_auth_callback_usecase import (
     HandleGoogleAuthCallbackUseCase,
 )
+from application.services.user import get_user_payload
 from domain.services.generate_google_auth_url_service import (
     GenerateGoogleAuthURLService,
 )
 from domain.services.handle_google_auth_callback_usecase_service import (
     HandleGoogleAuthCallbackService,
 )
-from services.users import get_or_create_user, get_user_payload
 from db.connection import get_db_connection
-from db.models.user import User
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from utilities.access_token import create_access_token
 from sqlalchemy.orm import Session
-from urllib.parse import urlencode
-import utilities.config as config
 
 
 router = APIRouter()

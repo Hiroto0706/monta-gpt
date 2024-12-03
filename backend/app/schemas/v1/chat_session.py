@@ -1,14 +1,10 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
 
 
 class ChatSessionBase(BaseModel):
     summary: Optional[str] = Field(default=None, alias="summary")
-
-
-class ChatSessionUpdate(ChatSessionBase):
-    pass
 
 
 class ChatSessionInDB(ChatSessionBase):
@@ -23,6 +19,14 @@ class ChatSessionInDB(ChatSessionBase):
         allow_population_by_field_name = True
 
 
+class ChatSessionCreateRequest(BaseModel):
+    prompt: str = Field(..., alias="prompt")
+
+
+class ChatSessionUpdateRequest(BaseModel):
+    summary: Optional[str] = Field(default=None, alias="summary")
+
+
 class ChatSessionResponse(ChatSessionBase):
     id: int = Field(..., alias="id")
     user_id: int = Field(..., alias="userId")
@@ -35,10 +39,6 @@ class ChatSessionResponse(ChatSessionBase):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
-
-
-class ChatSessionCreateRequest(BaseModel):
-    prompt: str = Field(..., alias="prompt")
 
 
 class ChatSessionDeleteResponse(BaseModel):
