@@ -16,13 +16,13 @@ class ChatSessionService(ChatSessionUseCase):
         指定されたユーザーのチャットセッション履歴を取得します。
 
         Args:
-          current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
+            current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
 
         Returns:
-          List[ChatSessionResponse]: チャットセッションのリスト
+            List[ChatSessionResponse]: チャットセッションのリスト
 
         Raises:
-          HTTPException: データ取得中にエラーが発生した場合
+            HTTPException: データ取得中にエラーが発生した場合
         """
         try:
             chat_sessions = self.chat_session_repository.get_chat_session_by_user_id(

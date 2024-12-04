@@ -19,7 +19,7 @@ class GenerateGoogleAuthURLService(GenerateGoogleAuthURLUseCase):
             "scope": "openid email profile",
             "redirect_uri": self._redirect_uri,
             "access_type": "offline",
-            "prompt": "content",
+            "prompt": "consent",
         }
 
         url = f"{BASE_URL}?{urlencode(params)}"

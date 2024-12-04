@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 logger = logging.getLogger(__name__)
 
 
-async def retrieve_user_message(user_message: str):
+def retrieve_user_message(user_message: str):
     client_message = json.loads(user_message)
     message_content = client_message.get("message")
     if not message_content:
@@ -17,3 +17,9 @@ async def retrieve_user_message(user_message: str):
         )
 
     return message_content
+
+
+def retrieve_session_id(user_message: str):
+    client_message = json.loads(user_message)
+    session_id = client_message.get("session_id")
+    return session_id

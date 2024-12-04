@@ -9,13 +9,13 @@ from application.usecase.handle_google_auth_callback_usecase import (
     HandleGoogleAuthCallbackUseCase,
 )
 from application.services.user import get_user_payload
+from infrastructure.database.connection import get_db_connection
 from domain.services.generate_google_auth_url_service import (
     GenerateGoogleAuthURLService,
 )
 from domain.services.handle_google_auth_callback_usecase_service import (
     HandleGoogleAuthCallbackService,
 )
-from db.connection import get_db_connection
 from sqlalchemy.orm import Session
 
 

@@ -8,11 +8,15 @@ from fastapi import HTTPException, status
 from datetime import datetime, timedelta
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-
+from langchain.prompts.chat import (
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
 from application.usecase.agent_usecase import AgentUseCase
 from infrastructure.database.models.chat_session import ChatSession
 from infrastructure.database.models.message import Message
 from infrastructure.cache.redis.redis_keys import (
+    get_messages_list_key,
     get_sessions_list_key,
 )
 import utilities.config as config
@@ -39,8 +43,6 @@ class AgentService(AgentUseCase):
             self._db.add(new_chat_session)
             self._db.commit()
             self._db.refresh(new_chat_session)
-            cache_key_pattern = get_sessions_list_key(user_id)
-            await self.delete_cache(cache_key_pattern)
             return new_chat_session.id
         except Exception as e:
             logger.error(f"Error creating chat session: {str(e)}")
@@ -50,7 +52,7 @@ class AgentService(AgentUseCase):
             )
 
     async def get_conversation_history(
-        self, session_id: int, limit: int
+        self, session_id: int, limit: int = 10
     ) -> List[Dict[str, str]]:
         try:
             conversation_histories = (
@@ -81,9 +83,7 @@ class AgentService(AgentUseCase):
         context: List[Dict[str, str]],
     ) -> AsyncGenerator[str, None]:
         try:
-            async for chunk in self._process_llm(
-                message_content, session_id, self._db, context
-            ):
+            async for chunk in self._process_llm(message_content, session_id, context):
                 yield chunk
         except Exception as e:
             logger.error(f"Error processing message: {str(e)}")
@@ -117,14 +117,10 @@ class AgentService(AgentUseCase):
         system_prompt = self._load_system_prompt()
         system_template = ChatPromptTemplate.from_messages(
             [
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": "Context Analysis:\n{context}\n\nEngineer's Adaptive Task: {prompt}",
-                },
+                SystemMessagePromptTemplate.from_template(system_prompt),
+                HumanMessagePromptTemplate.from_template(
+                    "Context Analysis:\n{context}\n\nEngineer's Adaptive Task: {prompt}"
+                ),
             ]
         )
 
@@ -163,9 +159,9 @@ class AgentService(AgentUseCase):
 
         # MEMO: 本当はこの時点でfull_responseをapplication層に返し、application層のサービスとかでDB保存は行うべき
         if full_response:
-            self._save_messages_to_db(session_id, prompt, full_response)
+            await self._save_messages_to_db(session_id, prompt, full_response)
 
-    def _save_messages_to_db(
+    async def _save_messages_to_db(
         self, session_id: int, user_message_content: str, agent_message_content: str
     ) -> None:
         """
@@ -176,13 +172,16 @@ class AgentService(AgentUseCase):
             user_message_content (str): The user's message.
             agent_message_content (str): The agent's message.
         """
+        cache_key_pattern = get_messages_list_key(session_id)
+        await self.delete_cache(cache_key_pattern)
+
         try:
-            user_message = self._message_repository.create_message(
+            user_message = self.message_repository.create_message(
                 session_id=session_id,
                 content=user_message_content,
                 is_user=True,
             )
-            agent_message = self._message_repository.create_message(
+            agent_message = self.message_repository.create_message(
                 session_id=session_id,
                 content=agent_message_content,
                 is_user=False,
@@ -218,8 +217,8 @@ class AgentService(AgentUseCase):
         Raises:
             HTTPException: If the file is not found or cannot be read.
         """
-        project_root = Path(__file__).resolve().parent[3]
-        system_prompt_path = project_root.joinpath("assets", "system_prompt.txt")
+        project_root = Path(__file__).resolve().parents[2]
+        system_prompt_path = project_root / "assets" / "system_prompt.txt"
 
         with system_prompt_path.open("r", encoding="utf-8") as file:
             return file.read()

@@ -2,19 +2,22 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from infrastructure.repositories.chat_session import (
     ChatSessionRepositoryImpl,
 )
-from schemas.v1.chat_session import ChatSessionCreateRequest
 from schemas.v1.chat_session import (
     ChatSessionResponse,
 )
 
 
 class ChatSessionUseCase(ABC):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, redis: RedisRepository):
         self._db = db
-        self.chat_session_repository = ChatSessionRepositoryImpl(db=self._db)
+        self._redis = redis
+        self.chat_session_repository = ChatSessionRepositoryImpl(
+            db=self._db, redis=self._redis
+        )
 
     @abstractmethod
     async def get_chat_history(
@@ -24,15 +27,15 @@ class ChatSessionUseCase(ABC):
         指定されたユーザーのチャットセッション履歴を取得します。
 
         Args:
-          current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
-          db (Session): データベースセッション
-          redis (Redis): Redisクライアント
+            current_user (Dict[str, Any]): アクセストークンから取得したユーザーペイロード
+            db (Session): データベースセッション
+            redis (Redis): Redisクライアント
 
         Returns:
-          List[ChatSessionResponse]: チャットセッションのリスト
+            List[ChatSessionResponse]: チャットセッションのリスト
 
         Raises:
-          HTTPException: データ取得中にエラーが発生した場合
+            HTTPException: データ取得中にエラーが発生した場合
         """
         pass
 

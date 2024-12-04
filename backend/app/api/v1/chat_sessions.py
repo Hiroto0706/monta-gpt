@@ -3,11 +3,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import Any, Dict, List
 from application.services.user import get_user_payload
+from infrastructure.database.connection import get_db_connection
 from utilities.dict import get_user_id_from_dict
 from domain.services.chat_session_service import ChatSessionService
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_repository import RedisRepository
-from db.connection import get_db_connection
 from schemas.v1.chat_session import ChatSessionResponse
 
 router = APIRouter()
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 async def get_chat_history(
     current_user: Dict[str, Any] = Depends(get_user_payload),
     db: Session = Depends(get_db_connection),
+    redis: RedisRepository = Depends(get_redis_connection),
 ):
     """
     指定されたユーザーのチャットセッション履歴を取得します。
@@ -34,7 +35,7 @@ async def get_chat_history(
     Raises:
         HTTPException: データ取得中にエラーが発生した場合
     """
-    chat_session_service = ChatSessionService(db)
+    chat_session_service = ChatSessionService(db, redis)
     user_id = get_user_id_from_dict(current_user)
     return await chat_session_service.get_chat_history(user_id)
 

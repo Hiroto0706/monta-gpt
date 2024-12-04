@@ -4,12 +4,14 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from infrastructure.database.models.message import Message
 
 
 class MessageRepository(ABC):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, redis: RedisRepository):
         self._db = db
+        self._redis = redis
 
     @abstractmethod
     def get_messages_by_session_id(
@@ -17,13 +19,6 @@ class MessageRepository(ABC):
     ) -> Optional[List[Message]]:
         """
         指定された session_id に基づいてメッセージを取得します。
-        """
-        pass
-
-    @abstractmethod
-    def get_message_by_id(self, message_id: int) -> Optional[Message]:
-        """
-        指定された message_id に基づいて単一のメッセージを取得します。
         """
         pass
 

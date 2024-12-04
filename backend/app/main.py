@@ -7,7 +7,7 @@ from api import router as api_router
 import utilities.config as config
 
 # 全てのモデルのインポート
-from db.models import *
+from infrastructure.database.models import *
 
 logging.basicConfig(level=logging.INFO)
 

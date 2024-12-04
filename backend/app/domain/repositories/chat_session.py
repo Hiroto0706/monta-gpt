@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
-import datetime
+from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
+from infrastructure.cache.redis.redis_repository import RedisRepository
 from infrastructure.database.models.chat_session import ChatSession
 
 
 class ChatSessionRepository(ABC):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, redis: RedisRepository):
         self._db = db
+        self._redis = redis
 
     @abstractmethod
     def get_chat_session_by_user_id(
@@ -25,21 +27,5 @@ class ChatSessionRepository(ABC):
     ) -> Optional[ChatSession]:
         """
         新しいチャットセッションを作成します
-        """
-        pass
-
-    @abstractmethod
-    def update_chat_session(
-        self, db: Session, session_id: int, summary: str
-    ) -> Optional[ChatSession]:
-        """
-        指定されたsession_idに基づいてチャットセッションのアップデートします
-        """
-        pass
-
-    @abstractmethod
-    def delete_chat_session(self, db: Session, session_id: int) -> bool:
-        """
-        指定されたsession_idに基づいてチャットセッションを削除します
         """
         pass

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator, List, Dict
 from sqlalchemy.orm import Session
-from backend.app.infrastructure.repositories.message import MessageRepositoryImpl
+from infrastructure.repositories.message import MessageRepositoryImpl
 from infrastructure.cache.redis.redis_repository import RedisRepository
 from infrastructure.database.models.chat_session import ChatSession
 from domain.value_objects.user import UserID
@@ -12,7 +12,7 @@ class AgentUseCase(ABC):
     def __init__(self, db: Session, redis: RedisRepository):
         self._db = db
         self._redis = redis
-        self.message_repository = MessageRepositoryImpl(db=self._db)
+        self.message_repository = MessageRepositoryImpl(db=self._db, redis=self._redis)
 
     @abstractmethod
     async def delete_cache(self, redis_key: str) -> None:

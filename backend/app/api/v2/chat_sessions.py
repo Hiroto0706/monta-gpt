@@ -6,12 +6,13 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from sqlalchemy.orm import Session
-from backend.app.application.services.user_message import retrieve_user_message
-from backend.app.domain.services.agent_service import AgentService
+from application.services.user_message import retrieve_user_message
+from infrastructure.database.connection import get_db_connection
+from infrastructure.cache.redis.redis_keys import get_sessions_list_key
+from domain.services.agent_service import AgentService
 from utilities.dict import get_user_id_from_dict
 from infrastructure.cache.connection import get_redis_connection
 from infrastructure.cache.redis.redis_repository import RedisRepository
-from db.connection import get_db_connection
 from utilities.access_token import verify_access_token
 
 router = APIRouter()
@@ -44,6 +45,9 @@ async def websocket_create_chat_session(
 
         # AgentServiceを使用してチャットセッションを作成
         session_id = await agent_service.create_chat_session(user_id, message_content)
+
+        cache_key_pattern = get_sessions_list_key(user_id)
+        await agent_service.delete_cache(cache_key_pattern)
 
         # 新規作成時はcontextがないので空にする
         async for chunk in agent_service.process_message(

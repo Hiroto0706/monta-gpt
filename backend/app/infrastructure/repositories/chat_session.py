@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import logging
 from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError
@@ -24,7 +24,7 @@ class ChatSessionRepositoryImpl(ChatSessionRepository):
         """
         cache_key = get_sessions_list_key(user_id)
         try:
-            chat_sessions_data = self.redis.get(cache_key)
+            chat_sessions_data = self._redis.get(cache_key)
             chat_sessions = [ChatSessionResponse(**item) for item in chat_sessions_data]
             return chat_sessions
 
