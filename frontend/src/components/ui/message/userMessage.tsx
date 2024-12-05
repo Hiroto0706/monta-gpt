@@ -16,8 +16,6 @@ const UserMessage: React.FC<Props> = ({ index, message }) => {
     return content.length > 100 ? "" : "text-lg";
   };
 
-  console.log("ここ通ってる？")
-
   return (
     <>
       <div

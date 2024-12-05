@@ -11,19 +11,19 @@ dropdb:
 
 .PHONY: create-migration
 create-migration:
-	cd ./backend/app/db && alembic revision -m $(name)
+	docker exec -it migration alembic revision -m $(name)
 
 .PHONY: migrationup
 migrationup:
-	cd ./backend/app/db && alembic upgrade head
+	docker exec -it migration alembic upgrade head
 
 .PHONY: migrationup-count
 migrationup-count:
-	cd ./backend/app/db && alembic upgrade +${count}
+	docker exec -it migration alembic upgrade +${count}
 
 .PHONY: migrationdown
 migrationdown:
-	cd ./backend/app/db && alembic downgrade base
+	docker exec -it migration alembic downgrade base
 
 .PHONY: migrationdown-count
 migrationdown-count:

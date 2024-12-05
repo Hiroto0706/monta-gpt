@@ -70,6 +70,21 @@ services:
     networks:
       - app-network
 
+  migrations:
+    container_name: migration
+    build: ./migration
+    volumes:
+      - ./migration:/migration
+      - ./backend/app:/app
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/monta-gpt
+      - PYTHONPATH=/app
+    command: [ "alembic", "upgrade", 'head' ]
+    networks:
+      - app-network
+
 volumes:
   postgres-data:
   redis-data:
