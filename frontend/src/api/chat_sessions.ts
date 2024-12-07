@@ -1,10 +1,10 @@
 import apiClient from "@/lib/apiClient";
-import { Thread } from "@/types/threads";
+import { ChatSession } from "@/types/chat_sessions";
 
 /*
   FetchThreadList はスレッドのリストを取得する関数
 */
-export const FetchThreadList = async (): Promise<Thread[]> => {
+export const FetchThreadList = async (): Promise<ChatSession[]> => {
   try {
     const response = await apiClient.get("chat_sessions/", {
       withCredentials: true,
@@ -20,7 +20,7 @@ export const FetchThreadList = async (): Promise<Thread[]> => {
 /*
   CreateThread は新しいスレッドを作成する関数
 */
-export const CreateThread = async (prompt: string): Promise<Thread> => {
+export const CreateThread = async (prompt: string): Promise<ChatSession> => {
   const formData = { prompt };
 
   try {

@@ -47,3 +47,7 @@ dc-down:
 .PHONY: update-requirements
 update-requirements:
 	cd backend && rm -f requirements.txt && pip freeze > requirements.txt
+
+.PHONY: build-frontend
+build-frontend:
+	cd frontend && rm -rf .next && npm run build

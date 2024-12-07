@@ -1,6 +1,6 @@
 "use client";
 
-import { FetchThreadList } from "@/api/threads";
+import { FetchThreadList } from "@/api/chat_sessions";
 import { ChatSession } from "@/types/chat_sessions";
 import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";

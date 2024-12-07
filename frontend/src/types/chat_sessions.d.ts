@@ -15,4 +15,4 @@ interface BaseChatSession {
   updatedAt: Timestamp;
 }
 
-export interface ChatSession extends BaseChatSession {}
+export type ChatSession = BaseChatSession;
