@@ -9,14 +9,8 @@ FROM node:23-alpine AS builder
 WORKDIR /app
 COPY package*.json .
 COPY .env.production .env.production
-ARG CACHE_BUST=1
 RUN npm ci
 COPY . .
-
-ARG NEXT_PUBLIC_BASE_URL
-ARG NEXT_PUBLIC_BASE_URL_WS
-ENV NEXT_PUBLIC_BASE_URL $NEXT_PUBLIC_BASE_URL
-ENV NEXT_PUBLIC_BASE_URL_WS $NEXT_PUBLIC_BASE_URL_WS
 
 RUN npm run build
 
