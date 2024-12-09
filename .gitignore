@@ -3,5 +3,12 @@
 backend/app/.env.dev
 backend/app/.env.prd
 
+# infra
+monta-gpt-credentials.json
+*.terraform.lock.hcl
+*.terraform
+*cloud-sql-sa-key.json
+
+
 # all
 /.vscode
