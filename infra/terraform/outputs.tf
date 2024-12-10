@@ -13,3 +13,8 @@ output "kubernetes_cluster_ca_certificate" {
 output "cloud_sql_instance_connection_name" {
   value = google_sql_database_instance.default.connection_name
 }
+
+output "db_password" {
+  value     = random_password.db_password.result
+  sensitive = true
+}
