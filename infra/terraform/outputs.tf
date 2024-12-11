@@ -18,3 +18,16 @@ output "db_password" {
   value     = random_password.db_password.result
   sensitive = true
 }
+
+output "redis_host" {
+  value = google_redis_instance.cache.host
+}
+
+output "redis_port" {
+  value = google_redis_instance.cache.port
+}
+
+output "redis_password" {
+  value     = random_password.redis_password.result
+  sensitive = true
+}
