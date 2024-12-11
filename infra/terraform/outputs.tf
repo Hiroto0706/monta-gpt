@@ -19,6 +19,10 @@ output "db_password" {
   sensitive = true
 }
 
+output "db_host" {
+  value = google_sql_database_instance.default.public_ip_address
+}
+
 output "redis_host" {
   value = google_redis_instance.cache.host
 }

@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration
+  namespace: monta-gpt
+spec:
+  template:
+    spec:
+      containers:
+        - name: migration
+          image: asia.gcr.io/monta-gpt/monta-gpt-migration:latest
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_HOST
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_DATABASE
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_PORT
+      restartPolicy: Never
+  backoffLimit: 4

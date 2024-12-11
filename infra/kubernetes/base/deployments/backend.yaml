@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: monta-gpt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: asia.gcr.io/monta-gpt/monta-gpt-backend:latest
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_HOST
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_DATABASE
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_PORT
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redis-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redis-config
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-config
+                  key: REDIS_PASSWORD

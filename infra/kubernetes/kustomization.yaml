@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monta-gpt
+
+configMapGenerator:
+  - name: frontend-config
+    literals:
+      - NEXT_PUBLIC_BASE_URL=https://$(INGRESS_IP)/api/v1/
+      - NEXT_PUBLIC_BASE_URL_WS=wss://$(INGRESS_IP)/api/v2/
+  - name: backend-config
+    literals:
+      - GOOGLE_REDIRECT_URI=https://$(INGRESS_IP)/api/v1/auth/google/callback
+
+resources:
+  - base/deployments/backend.yaml
+  - base/deployments/frontend.yaml
+  - base/jobs/migration.yaml
+  - base/services/backend.yaml
+  - base/services/frontend.yaml
+  - base/ingress/ingress.yaml
+  - base/config/backend-secret.yaml
