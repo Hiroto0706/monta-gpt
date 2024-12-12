@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: asia.gcr.io/monta-gpt/monta-gpt-backend:latest
+          image: asia-northeast1-docker.pkg.dev/monta-gpt/monta-gpt/backend:latest
           ports:
             - containerPort: 8000
           resources:

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: asia.gcr.io/monta-gpt/monta-gpt-frontend:latest
+          image: asia-northeast1-docker.pkg.dev/monta-gpt/monta-gpt/frontend:latest
           ports:
             - containerPort: 3000
           resources:
