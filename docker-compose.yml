@@ -78,7 +78,7 @@ services:
     container_name: migration
     build:
       context: ./migration
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     volumes:
       - ./migration:/migration
       - ./backend/app:/app
