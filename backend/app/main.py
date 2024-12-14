@@ -14,6 +14,7 @@ logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[config.ALLOW_ORIGIN],
@@ -21,4 +22,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+async def health_check():
+    return {"status": "healthy"}
+
+
 app.include_router(api_router, prefix="/api")

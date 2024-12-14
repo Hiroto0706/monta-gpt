@@ -5,6 +5,8 @@ metadata:
   namespace: monta-gpt
   annotations:
     kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "true"
+    ingress.gcp.kubernetes.io/health-check-path: "/api/"
 spec:
   rules:
     - http:

@@ -35,5 +35,10 @@ spec:
                 secretKeyRef:
                   name: cloud-sql-password
                   key: POSTGRES_PORT
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cloud-sql-password
+                  key: POSTGRES_URL
       restartPolicy: Never
   backoffLimit: 4
