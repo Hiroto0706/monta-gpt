@@ -6,11 +6,15 @@ namespace: monta-gpt
 configMapGenerator:
   - name: frontend-config
     literals:
-      - NEXT_PUBLIC_BASE_URL=https://$(INGRESS_IP)/api/v1/
-      - NEXT_PUBLIC_BASE_URL_WS=wss://$(INGRESS_IP)/api/v2/
+      - NEXT_PUBLIC_BASE_URL=http://35.201.101.249/api/v1/
+      - NEXT_PUBLIC_BASE_URL_WS=ws://35.201.101.249/api/v2/
   - name: backend-config
     literals:
-      - GOOGLE_REDIRECT_URI=https://$(INGRESS_IP)/api/v1/auth/google/callback
+      - GOOGLE_REDIRECT_URI=http://35.201.101.249/api/v1/auth/google/callback
+      - ENV=prd
+      - ALLOW_ORIGIN=http://35.201.101.249,ws://35.201.101.249
+      - DEFAULT_SESSION_EXPIRATION_DAY=7
+      - DOMAIN=http://35.201.101.249
 
 resources:
   - base/deployments/backend.yaml

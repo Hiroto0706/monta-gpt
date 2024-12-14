@@ -20,7 +20,12 @@ output "db_password" {
 }
 
 output "db_host" {
-  value = google_sql_database_instance.default.public_ip_address
+  value = google_sql_database_instance.default.private_ip_address
+}
+
+output "db_url" {
+  value     = "postgresql://monta_user:${random_password.db_password.result}@${google_sql_database_instance.default.private_ip_address}:5432/monta-gpt"
+  sensitive = true
 }
 
 output "redis_host" {

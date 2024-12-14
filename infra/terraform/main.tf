@@ -20,10 +20,35 @@ resource "google_compute_network" "vpc_network" {
 
 # サブネット作成 (GKE等で使用)
 resource "google_compute_subnetwork" "subnetwork" {
-  name          = "monta-gpt-subnetwork"
-  ip_cidr_range = "10.0.0.0/16"
-  region        = var.region
-  network       = google_compute_network.vpc_network.name
+  name                     = "monta-gpt-subnetwork"
+  ip_cidr_range            = "10.0.0.0/16"
+  region                   = var.region
+  network                  = google_compute_network.vpc_network.name
+  private_ip_google_access = true
+}
+
+###############################################################################
+# 静的外部IPアドレス
+###############################################################################
+resource "google_compute_address" "nat_ip" {
+  name   = "gke-nat-ip"
+  region = var.region
+}
+
+# NATゲートウェイの作成
+resource "google_compute_router" "nat_router" {
+  name    = "gke-router"
+  network = google_compute_network.vpc_network.name
+  region  = var.region
+}
+
+resource "google_compute_router_nat" "nat" {
+  name                               = "gke-nat"
+  router                             = google_compute_router.nat_router.name
+  region                             = google_compute_router.nat_router.region
+  nat_ip_allocate_option             = "MANUAL_ONLY"
+  nat_ips                            = [google_compute_address.nat_ip.id]
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
 
 
@@ -57,7 +82,7 @@ data "google_client_config" "default" {}
 
 # Kubernetesプロバイダ設定
 provider "kubernetes" {
-  host  = "http://${google_container_cluster.primary.endpoint}"
+  host  = "https://${google_container_cluster.primary.endpoint}"
   token = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(
     google_container_cluster.primary.master_auth[0].cluster_ca_certificate
@@ -66,34 +91,11 @@ provider "kubernetes" {
 
 
 ###############################################################################
-# 静的外部IPアドレス
-###############################################################################
-resource "google_compute_address" "nat_ip" {
-  name   = "gke-nat-ip"
-  region = var.region
-}
-
-# NATゲートウェイの作成
-resource "google_compute_router" "nat_router" {
-  name    = "gke-router"
-  network = google_compute_network.vpc_network.name
-  region  = var.region
-}
-
-resource "google_compute_router_nat" "nat" {
-  name                               = "gke-nat"
-  router                             = google_compute_router.nat_router.name
-  region                             = google_compute_router.nat_router.region
-  nat_ip_allocate_option             = "MANUAL_ONLY"
-  nat_ips                            = [google_compute_address.nat_ip.id]
-  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-}
-
-
-###############################################################################
 # Cloud SQL(PostgreSQL) 設定
 ###############################################################################
 resource "google_sql_database_instance" "default" {
+  depends_on = [google_service_networking_connection.private_vpc_connection]
+
   name             = var.db_instance_name
   database_version = "POSTGRES_14"
   region           = var.region
@@ -109,11 +111,12 @@ resource "google_sql_database_instance" "default" {
       complexity             = "COMPLEXITY_DEFAULT"
     }
     ip_configuration {
-      ipv4_enabled = true
-      authorized_networks {
-        name  = "gke-nat-network"
-        value = "${google_compute_address.nat_ip.address}/32"
-      }
+      ipv4_enabled    = true
+      private_network = google_compute_network.vpc_network.id
+      # authorized_networks {
+      #   name  = "gke-nat-network"
+      #   value = "${google_compute_address.nat_ip.address}/32"
+      # }
     }
   }
 
@@ -125,6 +128,21 @@ resource "google_sql_database" "default" {
   name     = "monta-gpt"
   instance = google_sql_database_instance.default.name
 }
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.vpc_network.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "private-ip-address"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.vpc_network.id
+}
+
 
 
 ###############################################################################
@@ -165,8 +183,8 @@ resource "kubernetes_secret" "cloud_sql_password" {
     POSTGRES_USERNAME = "monta_user"
     POSTGRES_DATABASE = "monta-gpt"
     POSTGRES_PORT     = "5432"
-    POSTGRES_HOST     = google_sql_database_instance.default.public_ip_address
-    POSTGRES_URL      = "postgresql://monta_user:${random_password.db_password.result}@${google_sql_database_instance.default.public_ip_address}:5432/monta-gpt"
+    POSTGRES_HOST     = google_sql_database_instance.default.private_ip_address
+    POSTGRES_URL      = "postgresql://monta_user:${random_password.db_password.result}@${google_sql_database_instance.default.private_ip_address}:5432/monta-gpt"
   }
 }
 
