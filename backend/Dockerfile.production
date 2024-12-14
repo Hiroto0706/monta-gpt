@@ -15,7 +15,7 @@ RUN apt-get update \
 COPY ./app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app /
+COPY ./app /app
 
 # ビルド用ステージ
 FROM python:3.11-slim AS builder
@@ -24,7 +24,7 @@ WORKDIR /app
 COPY ./app/requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app /
+COPY ./app /app
 
 # 最終用ステージ
 FROM python:3.11-slim
