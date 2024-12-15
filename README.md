@@ -29,7 +29,6 @@ https://monta-database.notion.site/Python-Web-e6dbc4ffe76644109f8005efd49c7b69?p
 - **データベース**：PostgreSQL（ユーザーデータとチャット履歴の保存）
 - **認証**：Google OAuth 2.0
 - **コンテナ化**：Docker
-- **ロギング**：Google Cloud Logging
 
 ### フロントエンド
 
@@ -45,9 +44,7 @@ https://monta-database.notion.site/Python-Web-e6dbc4ffe76644109f8005efd49c7b69?p
 - **クラウドプロバイダ**：Google Cloud Platform（GCP）
 - **オーケストレーション**：Kubernetes（GKE）
 - **IaC（インフラストラクチャコード化）**：Terraform
-- **継続的デリバリー**：ArgoCD（GitOpsベースのデプロイメント）
-- **リバースプロキシ**：NGINX
-- **SSL/TLS**：Let's Encryptとcert-managerを使用
+- **リバースプロキシ**：NGINX（ローカル開発のみ）
 
 ## 技術スタック
 
@@ -61,7 +58,4 @@ https://monta-database.notion.site/Python-Web-e6dbc4ffe76644109f8005efd49c7b69?p
 | **コンテナ化**      | Docker                       | アプリケーションのコンテナ化                       |
 | **オーケストレーション**| Kubernetes（GKE）          | コンテナのオーケストレーションとスケーリング       |
 | **IaC**            | Terraform                    | GCP上でのインフラプロビジョニング                 |
-| **CD**             | ArgoCD                       | GitOpsによる継続的デプロイメント                   |
-| **リバースプロキシ**| NGINX                        | ロードバランシングとリクエストルーティング         |
-| **ロギング**        | Google Cloud Logging         | アプリケーションイベントのモニタリングとロギング   |
-| **SSL/TLS**        | Let's Encrypt、cert-manager   | HTTPSによる安全な通信                             |
+| **リバースプロキシ**| NGINX                        | ロードバランシングとリクエストルーティング（ローカルのみ）         |
