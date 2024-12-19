@@ -119,7 +119,7 @@ class AgentService(AgentUseCase):
             [
                 SystemMessagePromptTemplate.from_template(system_prompt),
                 HumanMessagePromptTemplate.from_template(
-                    "Context Analysis:\n{context}\n\nEngineer's Adaptive Task: {prompt}"
+                    "User's question: {prompt}"
                 ),
             ]
         )
